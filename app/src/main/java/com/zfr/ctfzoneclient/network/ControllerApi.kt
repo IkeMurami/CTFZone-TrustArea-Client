@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit
 
 
 class ControllerApi {
+
     val BASE_URL: String = BuildConfig.API_URL
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

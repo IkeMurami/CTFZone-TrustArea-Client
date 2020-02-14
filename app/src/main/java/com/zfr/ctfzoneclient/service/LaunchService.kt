@@ -1,4 +1,4 @@
-package com.zfr.ctfzoneclient
+package com.zfr.ctfzoneclient.service
 
 import android.app.Service
 import android.content.Context
