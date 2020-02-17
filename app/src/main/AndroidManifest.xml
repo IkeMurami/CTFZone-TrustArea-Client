@@ -10,10 +10,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <receiver
+            android:name=".receivers.receivers.UserBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.zfr.ctfzoneclient.MANAGE_USER"></action>
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".service.view.UserService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -26,7 +35,7 @@
         <service
             android:name=".service.LaunchService"
             android:enabled="true"
-            android:exported="true"></service>
-
+            android:exported="true" />
     </application>
+
 </manifest>

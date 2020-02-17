@@ -3,6 +3,8 @@ package com.zfr.ctfzoneclient.service.view
 import android.app.IntentService
 import android.content.Intent
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
 
 // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
 private const val ACTION_CREATE_USER = "com.zfr.ctfzoneclient.action.CREATE_USER"
@@ -10,8 +12,8 @@ private const val ACTION_GET_USER = "com.zfr.ctfzoneclient.action.GET_USER"
 private const val ACTION_EDIT_USER = "com.zfr.ctfzoneclient.action.EDIT_USER"
 private const val ACTION_DELETE_USER = "com.zfr.ctfzoneclient.action.DELETE_USER"
 
-private const val EXTRA_USER_NAME = "com.zfr.ctfzoneclient.extra.USER_NAME"
-//private const val EXTRA_PARAM2 = "com.zfr.ctfzoneclient.extra.PARAM2"
+const val EXTRA_USER_NAME = "com.zfr.ctfzoneclient.extra.USER_NAME"
+//const val EXTRA_PARAM2 = "com.zfr.ctfzoneclient.extra.PARAM2"
 
 /**
  * An [IntentService] subclass for handling asynchronous task requests in
@@ -39,7 +41,7 @@ class UserService : IntentService("UserService") {
      * parameters.
      */
     private fun handleActionCreateUser(user_name: String?) {
-        TODO("Handle action Foo")
+        Log.d("Test", "handleActionCreateUser Called")
     }
 
     /**
@@ -47,7 +49,7 @@ class UserService : IntentService("UserService") {
      * parameters.
      */
     private fun handleActionGetUser(user_name: String?) {
-        TODO("Handle action Baz")
+        Log.d("Test", "handleActionGetUser Called")
     }
 
     companion object {
