@@ -14,4 +14,5 @@ class UserBroadcastReceiver : BroadcastReceiver() {
         val user_name = intent.getStringExtra(EXTRA_USER_NAME)
         UserService.startActionGetUser(context, user_name)
     }
+
 }
