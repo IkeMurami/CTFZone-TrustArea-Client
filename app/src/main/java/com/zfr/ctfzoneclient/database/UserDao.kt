@@ -4,35 +4,23 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
 
+
 @Dao
 interface UserDao  {
-    @Query("select * from databaseuser")
-    fun getUsers(): LiveData<List<DatabaseUser>>
+
+    @Query("SELECT * FROM UserDBEntity WHERE user_id LIKE :user_id")
+    fun getUser(user_id: String): LiveData<UserDBEntity>
+
+    @Query("SELECT * FROM UserDBEntity")
+    fun getUsers(): LiveData<List<UserDBEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(users: List<DatabaseUser>)
+    fun insertUsers(users: List<UserDBEntity>): LiveData<List<UserDBEntity>>
 
-}
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertUser(user: UserDBEntity): LiveData<UserDBEntity>
 
-@Database(entities = [DatabaseUser::class], version = 1)
-abstract class UsersDatabase: RoomDatabase() {
-    abstract val userDao: UserDao
-}
+    @Delete
+    fun deleteUser(user: UserDBEntity)
 
-private val DATABASE_NAME = "users"
-private lateinit var INSTANCE: UsersDatabase
-
-fun getDatabase(context: Context): UsersDatabase {
-
-    synchronized(UsersDatabase::class.java) {
-
-        if (!::INSTANCE.isInitialized) {
-            INSTANCE = Room.databaseBuilder(context.applicationContext,
-                UsersDatabase::class.java,
-                DATABASE_NAME).build()
-        }
-
-    }
-
-    return INSTANCE
 }

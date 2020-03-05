@@ -6,14 +6,15 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 
-// IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-private const val ACTION_CREATE_USER = "com.zfr.ctfzoneclient.action.CREATE_USER"
-private const val ACTION_GET_USER = "com.zfr.ctfzoneclient.action.GET_USER"
-private const val ACTION_EDIT_USER = "com.zfr.ctfzoneclient.action.EDIT_USER"
-private const val ACTION_DELETE_USER = "com.zfr.ctfzoneclient.action.DELETE_USER"
+private const val PACKAGE_ID = "com.zfr.ctfzoneclient"
 
-const val EXTRA_USER_NAME = "com.zfr.ctfzoneclient.extra.USER_NAME"
-//const val EXTRA_PARAM2 = "com.zfr.ctfzoneclient.extra.PARAM2"
+// IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
+private const val ACTION_CREATE_USER = "${PACKAGE_ID}.action.CREATE_USER"
+private const val ACTION_GET_USER = "${PACKAGE_ID}.action.GET_USER"
+private const val ACTION_EDIT_USER = "${PACKAGE_ID}.action.EDIT_USER"
+private const val ACTION_DELETE_USER = "${PACKAGE_ID}.action.DELETE_USER"
+
+const val EXTRA_USER_NAME = "${PACKAGE_ID}.extra.USER_NAME"
 
 /**
  * An [IntentService] subclass for handling asynchronous task requests in
@@ -41,6 +42,7 @@ class UserService : IntentService("UserService") {
      * parameters.
      */
     private fun handleActionCreateUser(user_name: String?) {
+        Toast.makeText(this, "Action Create UserNetworkEntity", Toast.LENGTH_LONG).show()
         Log.d("Test", "handleActionCreateUser Called")
     }
 

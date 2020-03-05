@@ -9,13 +9,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service
+            android:name=".service.view.OrderService"
+            android:exported="false"></service>
+        <service
+            android:name=".service.view.AuthService"
+            android:exported="false" />
 
         <receiver
             android:name=".receivers.receivers.UserBroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.zfr.ctfzoneclient.MANAGE_USER"></action>
+                <action android:name="com.zfr.ctfzoneclient.MANAGE_USER" />
             </intent-filter>
         </receiver>
 

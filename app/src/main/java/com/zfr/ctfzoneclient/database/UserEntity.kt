@@ -2,27 +2,27 @@ package com.zfr.ctfzoneclient.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.zfr.ctfzoneclient.network.data.User
+import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 
 /**
- * DatabaseUser represents a user entity in the database
+ * UserDBEntity represents a user entity in the database
  */
 @Entity
-data class DatabaseUser constructor(
+data class UserDBEntity constructor(
     @PrimaryKey
     val user_id: String,
     val user_name: String,
-    val proofile: String,
+    val profile: String,
     val photo_url: String
 )
 
 
 /**
- * Extension: Map List<DatabaseUser> to domain entities (to Network Entity)
+ * Extension: Map List<UserDBEntity> to domain entities (to Network Entity)
  */
-fun List<DatabaseUser>.asDomainModel(): List<User> {
+fun List<UserDBEntity>.asDomainModel(): List<UserNetworkEntity> {
     return map {
-        User(
+        UserNetworkEntity(
             login = it.user_name,
             user_id = it.user_id
         )

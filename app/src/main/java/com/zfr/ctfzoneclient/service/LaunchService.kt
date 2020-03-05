@@ -1,5 +1,6 @@
 package com.zfr.ctfzoneclient.service
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -30,6 +31,7 @@ class LaunchService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder? {
+
         return null
     }
 }
