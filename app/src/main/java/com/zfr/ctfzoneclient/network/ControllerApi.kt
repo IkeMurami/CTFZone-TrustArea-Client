@@ -8,6 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 import com.zfr.ctfzoneclient.BuildConfig
+import com.zfr.ctfzoneclient.network.interfaces.OrderApi
 import com.zfr.ctfzoneclient.network.interfaces.UserApi
 import java.util.concurrent.TimeUnit
 
@@ -36,6 +37,17 @@ class ControllerApi {
             //.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
         return retrofit.create(UserApi::class.java)
+    }
+
+    fun getOrderApi(): OrderApi {
+        val retrofit = Retrofit.Builder()
+            .client(client.build())
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+
+        return retrofit.create(OrderApi::class.java)
     }
 
     fun getLoggingApi() {}

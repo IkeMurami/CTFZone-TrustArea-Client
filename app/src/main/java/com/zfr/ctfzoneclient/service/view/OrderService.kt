@@ -1,6 +1,7 @@
 package com.zfr.ctfzoneclient.service.view
 
 import android.app.IntentService
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.Context
 
@@ -8,10 +9,14 @@ private const val PACKAGE_ID = "com.zfr.ctfzoneclient"
 
 // TODO: Rename actions, choose action names that describe tasks that this
 // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-private const val ACTION_FOO = "${PACKAGE_ID}.action.FOO"
-private const val ACTION_BAZ = "${PACKAGE_ID}.action.BAZ"
+private const val ACTION_ORDER_GET = "${PACKAGE_ID}.action.ORDER.GET"
+private const val ACTION_ORDER_GET_ALL = "${PACKAGE_ID}.action.ORDER.ALL"
+private const val ACTION_ORDER_EDIT = "${PACKAGE_ID}.action.ORDER.EDIT"
+private const val ACTION_ORDER_CREATE = "${PACKAGE_ID}.action.ORDER.CREATE"
+private const val ACTION_ORDER_DELETE = "${PACKAGE_ID}.action.ORDER.DELETE"
 
 // TODO: Rename parameters
+private const val EXTRA_PENDING_INTENT = "${PACKAGE_ID}.extra.PENDING_INTENT"
 private const val EXTRA_PARAM1 = "${PACKAGE_ID}.extra.PARAM1"
 private const val EXTRA_PARAM2 = "${PACKAGE_ID}.extra.PARAM2"
 
@@ -24,13 +29,17 @@ private const val EXTRA_PARAM2 = "${PACKAGE_ID}.extra.PARAM2"
 class OrderService : IntentService("OrderService") {
 
     override fun onHandleIntent(intent: Intent?) {
+
+        // if pending intent exist - need return value
+        val pending_intent = intent?.getParcelableExtra<PendingIntent>(EXTRA_PENDING_INTENT)
+
         when (intent?.action) {
-            ACTION_FOO -> {
+            ACTION_ORDER_GET -> {
                 val param1 = intent.getStringExtra(EXTRA_PARAM1)
                 val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                handleActionFoo(param1, param2)
+                handleActionOrderGet(param1, param2)
             }
-            ACTION_BAZ -> {
+            ACTION_ORDER_GET_ALL -> {
                 val param1 = intent.getStringExtra(EXTRA_PARAM1)
                 val param2 = intent.getStringExtra(EXTRA_PARAM2)
                 handleActionBaz(param1, param2)
@@ -42,7 +51,7 @@ class OrderService : IntentService("OrderService") {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionFoo(param1: String, param2: String) {
+    private fun handleActionOrderGet(user_id: String, pending_intent: PendingIntent?) {
         TODO("Handle action Foo")
     }
 
