@@ -1,9 +1,14 @@
 # How to build
-Release: ./gradlew build :app:assembleRelease
-Debug: ./gradlew build :app:assembleDebug
+
+Release: `./gradlew build :app:assembleRelease`
+
+Debug: `./gradlew build :app:assembleDebug`
 
 # Clean build cache directory
-./gradlew cleanBuildCache
+
+`./gradlew cleanBuildCache`
 
 # Clear build
-./gradlew clean
+
+`./gradlew clean`
+
