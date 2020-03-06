@@ -15,13 +15,13 @@ interface OrderDao {
     fun getOrders(): LiveData<List<OrderDBEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrder(order: OrderDBEntity): LiveData<OrderDBEntity>
+    fun insertOrder(order: OrderDBEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrders(orders: List<OrderDBEntity>): LiveData<List<OrderDBEntity>>
+    fun insertOrders(orders: List<OrderDBEntity>)
 
     @Update
-    fun updateOrder(order: OrderDBEntity): LiveData<OrderDBEntity>
+    fun updateOrder(order: OrderDBEntity)
 
     @Delete
     fun deleteOrder(order: OrderDBEntity)

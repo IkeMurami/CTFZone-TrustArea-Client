@@ -15,10 +15,10 @@ interface UserDao  {
     fun getUsers(): LiveData<List<UserDBEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUsers(users: List<UserDBEntity>): LiveData<List<UserDBEntity>>
+    fun insertUsers(users: List<UserDBEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertUser(user: UserDBEntity): LiveData<UserDBEntity>
+    fun insertUser(user: UserDBEntity)
 
     @Delete
     fun deleteUser(user: UserDBEntity)

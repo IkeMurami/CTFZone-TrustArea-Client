@@ -37,7 +37,7 @@ class OrderService : IntentService("OrderService") {
             ACTION_ORDER_GET -> {
                 val param1 = intent.getStringExtra(EXTRA_PARAM1)
                 val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                handleActionOrderGet(param1, param2)
+                handleActionOrderGet(param1, pending_intent)
             }
             ACTION_ORDER_GET_ALL -> {
                 val param1 = intent.getStringExtra(EXTRA_PARAM1)
@@ -74,7 +74,7 @@ class OrderService : IntentService("OrderService") {
         @JvmStatic
         fun startActionFoo(context: Context, param1: String, param2: String) {
             val intent = Intent(context, OrderService::class.java).apply {
-                action = ACTION_FOO
+                action = ACTION_ORDER_GET
                 putExtra(EXTRA_PARAM1, param1)
                 putExtra(EXTRA_PARAM2, param2)
             }
@@ -91,7 +91,7 @@ class OrderService : IntentService("OrderService") {
         @JvmStatic
         fun startActionBaz(context: Context, param1: String, param2: String) {
             val intent = Intent(context, OrderService::class.java).apply {
-                action = ACTION_BAZ
+                action = ACTION_ORDER_GET_ALL
                 putExtra(EXTRA_PARAM1, param1)
                 putExtra(EXTRA_PARAM2, param2)
             }
