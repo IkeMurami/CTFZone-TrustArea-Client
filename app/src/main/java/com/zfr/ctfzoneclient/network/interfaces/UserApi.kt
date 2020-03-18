@@ -12,7 +12,7 @@ interface UserApi {
     @GET("users/login")
     fun register(@Header("Authorization") credentials:String): Call<UserNetworkEntity> // If user not exist - create
 
-    @GET("users/list")
+    @GET("users")
     fun users(@Header("Authorization") credentials: String): Call<List<UserNetworkEntity>>
 
 }
