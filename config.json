@@ -1,0 +1,17 @@
+{
+  "applicationName": "CTFZone Client: Team 1",
+  "applicationId": "com.zfr.ctfzoneclient.team1",
+  "backend": {
+    "host": "192.168.2.1",
+    "port": "8080",
+    "endpoint": "api"
+  },
+
+  "signingConfig": {
+    "configName": "applicationTeam",
+    "storeFile": "applicationTeam.jks",
+    "storePassword": "password1",
+    "keyAlias": "application1",
+    "keyPassword": "password1"
+  }
+}
