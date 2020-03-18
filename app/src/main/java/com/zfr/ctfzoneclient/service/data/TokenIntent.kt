@@ -1,12 +1,11 @@
 package com.zfr.ctfzoneclient.service.data
 
 import android.content.Intent
-import com.zfr.ctfzoneclient.PACKAGE_ID
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenType
 
-private const val EXTRA_TOKEN = "$PACKAGE_ID.extra.TOKEN"
-private const val EXTRA_TOKEN_TYPE = "$PACKAGE_ID.extra.TOKEN_TYPE"
+private const val EXTRA_TOKEN = "TOKEN"
+private const val EXTRA_TOKEN_TYPE = "TOKEN_TYPE"
 
 
 fun Intent.asTokenNetworkEntity(): TokenNetworkEntity {

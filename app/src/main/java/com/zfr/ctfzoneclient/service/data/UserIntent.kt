@@ -1,13 +1,12 @@
 package com.zfr.ctfzoneclient.service.data
 
 import android.content.Intent
-import com.zfr.ctfzoneclient.PACKAGE_ID
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 
 
-private const val EXTRA_USER_NAME = "$PACKAGE_ID.extra.USER_NAME"
-private const val EXTRA_FIRST_NAME = "$PACKAGE_ID.extra.FIRST_NAME"
-private const val EXTRA_LAST_NAME = "$PACKAGE_ID.extra.LAST_NAME"
+private const val EXTRA_USER_NAME = "USER_NAME"
+private const val EXTRA_FIRST_NAME = "FIRST_NAME"
+private const val EXTRA_LAST_NAME = "LAST_NAME"
 
 fun Intent.asUserNetworkEntity(): UserNetworkEntity {
     return UserNetworkEntity(
