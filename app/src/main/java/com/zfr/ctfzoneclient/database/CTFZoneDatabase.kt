@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.zfr.ctfzoneclient.database.data.OrderDBEntity
+import com.zfr.ctfzoneclient.database.data.UserDBEntity
+import com.zfr.ctfzoneclient.database.tables.OrderDao
+import com.zfr.ctfzoneclient.database.tables.UserDao
 
 @Database(
     entities = [

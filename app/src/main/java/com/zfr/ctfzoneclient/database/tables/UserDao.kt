@@ -1,8 +1,8 @@
-package com.zfr.ctfzoneclient.database
+package com.zfr.ctfzoneclient.database.tables
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import com.zfr.ctfzoneclient.database.data.UserDBEntity
 
 
 @Dao

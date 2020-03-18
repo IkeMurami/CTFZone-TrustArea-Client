@@ -1,4 +1,4 @@
-package com.zfr.ctfzoneclient.database
+package com.zfr.ctfzoneclient.database.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,4 +1,4 @@
-package com.zfr.ctfzoneclient.database
+package com.zfr.ctfzoneclient.database.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -12,8 +12,8 @@ data class UserDBEntity constructor(
     @PrimaryKey
     val user_id: String,
     val user_name: String,
-    val profile: String,
-    val photo_url: String
+    val first_name: String,
+    val last_name: String
 )
 
 
@@ -23,8 +23,10 @@ data class UserDBEntity constructor(
 fun List<UserDBEntity>.asDomainModel(): List<UserNetworkEntity> {
     return map {
         UserNetworkEntity(
-            login = it.user_name,
-            user_id = it.user_id
+            username = it.user_name,
+            user_id = it.user_id,
+            firstName = it.first_name,
+            lastName = it.last_name
         )
     }
 }
