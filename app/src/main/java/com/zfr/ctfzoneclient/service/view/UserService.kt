@@ -5,6 +5,12 @@ import android.content.Intent
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.zfr.ctfzoneclient.network.ControllerApi
+import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
+import retrofit2.Callback
+import okhttp3.Credentials
+import retrofit2.Call
+import retrofit2.Response
 
 private const val PACKAGE_ID = "com.zfr.ctfzoneclient"
 
@@ -14,7 +20,6 @@ private const val ACTION_GET_USER = "${PACKAGE_ID}.action.GET_USER"
 private const val ACTION_EDIT_USER = "${PACKAGE_ID}.action.EDIT_USER"
 private const val ACTION_DELETE_USER = "${PACKAGE_ID}.action.DELETE_USER"
 
-const val EXTRA_USER_NAME = "${PACKAGE_ID}.extra.USER_NAME"
 
 /**
  * An [IntentService] subclass for handling asynchronous task requests in
@@ -26,13 +31,14 @@ class UserService : IntentService("UserService") {
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
             ACTION_CREATE_USER -> {
-                val user_name = intent.getStringExtra(EXTRA_USER_NAME)
+
+                // val user_name = intent.getStringExtra(USERSERVICE_EXTRA_USER_NAME)
                 // val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                handleActionCreateUser(user_name)
+                // handleActionCreateUser(user_name)
             }
             ACTION_GET_USER -> {
-                val user_name = intent.getStringExtra(EXTRA_USER_NAME)
-                handleActionGetUser(user_name)
+                // val user_name = intent.getStringExtra(USERSERVICE_EXTRA_USER_NAME)
+                // handleActionGetUser(user_name)
             }
         }
     }
@@ -44,6 +50,25 @@ class UserService : IntentService("UserService") {
     private fun handleActionCreateUser(user_name: String?) {
         Toast.makeText(this, "Action Create UserNetworkEntity", Toast.LENGTH_LONG).show()
         Log.d("Test", "handleActionCreateUser Called")
+
+        val credentials = Credentials.basic("admin", "password")
+        val users = ControllerApi().getUserApi().users(credentials)
+
+        users.enqueue(object : Callback<List<UserNetworkEntity>> {
+                override fun onResponse(call: Call<List<UserNetworkEntity>>, response: Response<List<UserNetworkEntity>>) {
+                    if (response.code() == 200) {
+                        val responseUsers = response.body()!!
+                        for (usr in responseUsers) {
+                            Log.d("Return user:", usr.username)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<List<UserNetworkEntity>>, t: Throwable) {
+
+                }
+            }
+        )
     }
 
     /**
@@ -65,7 +90,7 @@ class UserService : IntentService("UserService") {
         fun startActionCreateUser(context: Context, user_name: String) {
             val intent = Intent(context, UserService::class.java).apply {
                 action = ACTION_CREATE_USER
-                putExtra(EXTRA_USER_NAME, user_name)
+                // putExtra(USERSERVICE_EXTRA_USER_NAME, user_name)
             }
             context.startService(intent)
         }
@@ -80,7 +105,7 @@ class UserService : IntentService("UserService") {
         fun startActionGetUser(context: Context, user_name: String?) {
             val intent = Intent(context, UserService::class.java).apply {
                 action = ACTION_GET_USER
-                putExtra(EXTRA_USER_NAME, user_name)
+                // putExtra(USERSERVICE_EXTRA_USER_NAME, user_name)
             }
             context.startService(intent)
         }
