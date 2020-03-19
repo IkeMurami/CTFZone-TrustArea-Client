@@ -4,7 +4,7 @@
   "backend": {
     "host": "192.168.1.65",
     "port": "8080",
-    "endpoint": "api"
+    "endpoint": ""
   },
 
   "signingConfig": {

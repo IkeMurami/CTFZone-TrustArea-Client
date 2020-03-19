@@ -22,7 +22,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "String", "API_URL", "\"http://${config.backend.host}:${config.backend.port}/${config.backend.endpoint}/\""
+        buildConfigField "String", "API_URL", "\"http://${config.backend.host}:${config.backend.port}/${config.backend.endpoint}\""
     }
     buildTypes {
         release {
