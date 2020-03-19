@@ -30,9 +30,12 @@ private const val EXTRA_PENDING_INTENT = "PENDING_INTENT"
  */
 class TestService : IntentService("TestService") {
 
+    private val TAG = "TestService"
+
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
             ACTION_TEST_REGISTER -> {
+
                 val user = intent.asUserNetworkEntity()
                 handleActionTestRegister(user)
             }
@@ -49,7 +52,7 @@ class TestService : IntentService("TestService") {
     }
 
     private fun handleActionResult(intent: Intent) {
-        Log.d("Result Test", intent.asTokenNetworkEntity().toString())
+        Log.d(TAG, intent.asTokenNetworkEntity().toString())
     }
 
     private fun handleActionTestRegister(user: UserNetworkEntity) {

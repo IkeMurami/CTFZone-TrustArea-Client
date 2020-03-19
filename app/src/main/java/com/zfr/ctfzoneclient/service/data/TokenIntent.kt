@@ -18,7 +18,7 @@ fun Intent.asTokenNetworkEntity(): TokenNetworkEntity {
 
 fun TokenNetworkEntity.asIntent(intent: Intent): Intent {
     intent.putExtra(EXTRA_TOKEN, this.token)
-    intent.putExtra(EXTRA_TOKEN_TYPE, this.token_type)
+    intent.putExtra(EXTRA_TOKEN_TYPE, this.token_type.toString())
 
     return intent
 }
