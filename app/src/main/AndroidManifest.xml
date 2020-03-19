@@ -13,13 +13,13 @@
         android:theme="@style/AppTheme">
         <service
             android:name=".service.view.TestService"
-            android:exported="false"></service>
+            android:exported="true"></service>
         <service
             android:name=".service.view.OrderService"
-            android:exported="false" />
+            android:exported="true" />
         <service
             android:name=".service.view.AuthService"
-            android:exported="false" />
+            android:exported="true" />
 
         <receiver
             android:name=".receivers.receivers.UserBroadcastReceiver"

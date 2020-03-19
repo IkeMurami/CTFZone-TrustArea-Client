@@ -4,6 +4,7 @@ import android.app.IntentService
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.Context
+import android.util.Log
 import com.zfr.ctfzoneclient.network.ControllerApi
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 import com.zfr.ctfzoneclient.service.data.asIntent
@@ -62,8 +63,8 @@ class AuthService : IntentService("AuthService") {
             ) {
                 if (response.code() == 200) {
                     val responseData = response.body()!!
-
-                    pendingIntent?.send(applicationContext, 0, responseData.data?.asIntent(Intent()))
+                    // Log.d("Test message", "I'm here!!")
+                    pendingIntent?.send(applicationContext, 0, responseData.data!!.asIntent(Intent()))
                 }
             }
 
@@ -91,7 +92,7 @@ class AuthService : IntentService("AuthService") {
                 if (response.code() == 200) {
                     val responseData = response.body()!!
 
-                    pendingIntent?.send(applicationContext, 0, responseData.data?.asIntent(Intent()))
+                    pendingIntent?.send(applicationContext, 0, responseData.data!!.asIntent(Intent()))
                 }
             }
 

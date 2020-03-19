@@ -23,7 +23,7 @@ data class SessionDBEntity constructor(
 fun List<SessionDBEntity>.asDomainModel(): List<TokenNetworkEntity> {
     return map {
         TokenNetworkEntity(
-            tokenType = it.token_type,
+            token_type = it.token_type,
             token = it.token,
             expired = it.expired
         )

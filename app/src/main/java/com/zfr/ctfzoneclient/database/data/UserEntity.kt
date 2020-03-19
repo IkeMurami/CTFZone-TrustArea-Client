@@ -25,8 +25,8 @@ fun List<UserDBEntity>.asDomainModel(): List<UserNetworkEntity> {
         UserNetworkEntity(
             username = it.user_name,
             user_id = it.user_id,
-            firstName = it.first_name,
-            lastName = it.last_name
+            first_name = it.first_name,
+            last_name = it.last_name
         )
     }
 }

@@ -3,7 +3,7 @@ package com.zfr.ctfzoneclient
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 
-const val PACKAGE_ID = "com.zfr.ctfzoneclient"
+const val PACKAGE_ID = BuildConfig.APPLICATION_ID
 
 class MainActivity : AppCompatActivity() {
 

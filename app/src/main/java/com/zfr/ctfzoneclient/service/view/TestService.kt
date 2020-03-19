@@ -4,6 +4,8 @@ import android.app.IntentService
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 import com.zfr.ctfzoneclient.service.data.asUserNetworkEntity
 import com.zfr.ctfzoneclient.PACKAGE_ID
@@ -41,16 +43,25 @@ class TestService : IntentService("TestService") {
             }
             ACTION_PENDING_INTENT_RETURN_VALUE -> {
 
+                handleActionResult(intent)
             }
         }
     }
 
+    private fun handleActionResult(intent: Intent) {
+        Log.d("Result Test", intent.asTokenNetworkEntity().toString())
+    }
 
     private fun handleActionTestRegister(user: UserNetworkEntity) {
         val intent_local = Intent(applicationContext, TestService::class.java)
         intent_local.action = ACTION_PENDING_INTENT_RETURN_VALUE
         val pendingIntent = PendingIntent.getService(applicationContext, 0, intent_local, 0)
-        var intent_remote = Intent("${PACKAGE_ID}.action.AUTH_REGISTRATION")
+
+        // Android not allow send implicit intent to myself
+        // var intent_remote = Intent("${PACKAGE_ID}.action.AUTH_REGISTRATION")
+        var intent_remote = Intent(applicationContext, AuthService::class.java).apply {
+            action = "${PACKAGE_ID}.action.AUTH_REGISTRATION"
+        }
 
         intent_remote = user.asIntent(intent_remote)
         intent_remote.putExtra(EXTRA_PENDING_INTENT, pendingIntent)
@@ -63,14 +74,15 @@ class TestService : IntentService("TestService") {
         intent_local.action = ACTION_PENDING_INTENT_RETURN_VALUE
         val pendingIntent = PendingIntent.getService(applicationContext, 0, intent_local, 0)
 
-        var intent_remote = Intent("${PACKAGE_ID}.action.AUTH_SESSION")
+        // Android not allow send implicit intent to myself
+        // var intent_remote = Intent("${PACKAGE_ID}.action.AUTH_SESSION")
+        var intent_remote = Intent(applicationContext, AuthService::class.java).apply {
+            action = "${PACKAGE_ID}.action.AUTH_SESSION"
+        }
 
         intent_remote = session.asIntent(intent_remote)
         intent_remote.putExtra(EXTRA_PENDING_INTENT, pendingIntent)
 
         startService(intent_remote)
     }
-
-
-
 }

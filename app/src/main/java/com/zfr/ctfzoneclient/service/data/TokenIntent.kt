@@ -10,7 +10,7 @@ private const val EXTRA_TOKEN_TYPE = "TOKEN_TYPE"
 
 fun Intent.asTokenNetworkEntity(): TokenNetworkEntity {
     return TokenNetworkEntity(
-        tokenType = TokenType.valueOf(this.getStringExtra(EXTRA_TOKEN_TYPE)!!),
+        token_type = TokenType.valueOf(this.getStringExtra(EXTRA_TOKEN_TYPE)!!),
         token = this.getStringExtra(EXTRA_TOKEN)!!
     )
 }
@@ -18,7 +18,7 @@ fun Intent.asTokenNetworkEntity(): TokenNetworkEntity {
 
 fun TokenNetworkEntity.asIntent(intent: Intent): Intent {
     intent.putExtra(EXTRA_TOKEN, this.token)
-    intent.putExtra(EXTRA_TOKEN_TYPE, this.tokenType)
+    intent.putExtra(EXTRA_TOKEN_TYPE, this.token_type)
 
     return intent
 }

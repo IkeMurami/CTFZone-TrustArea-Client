@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 data class ClientNetworkEntity (
 
     @SerializedName("android_id")
-    val deviceId: String,
+    val android_id: String,
 
     @SerializedName("client_id")
-    val clientId: String
+    val client_id: String
 
 )
