@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName
 enum class TokenType(val tyken_type: String) {
     BEARER("bearer"),
     REFRESH("refresh"),
-    ACCESS("access")
+    ACCESS("access"),
+    SESSION("session")
 }
 
 enum class Scope {
