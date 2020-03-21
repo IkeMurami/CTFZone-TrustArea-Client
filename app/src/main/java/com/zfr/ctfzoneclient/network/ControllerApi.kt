@@ -24,9 +24,9 @@ class ControllerApi {
 
     private val client = OkHttpClient()
         .newBuilder()
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+        .writeTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS)
         .addInterceptor(loggingInterceptor)
 
     fun getUserApi(): UserApi {
