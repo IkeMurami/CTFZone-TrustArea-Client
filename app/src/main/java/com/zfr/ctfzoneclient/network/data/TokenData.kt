@@ -2,7 +2,7 @@ package com.zfr.ctfzoneclient.network.data
 
 import com.google.gson.annotations.SerializedName
 
-enum class TokenType(val tyken_type: String) {
+enum class TokenType(token_type: String) {
     bearer("bearer"),
     refresh("refresh"),
     access("access"),
