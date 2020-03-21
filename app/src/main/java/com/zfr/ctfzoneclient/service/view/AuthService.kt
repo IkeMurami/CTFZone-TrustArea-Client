@@ -2,6 +2,7 @@ package com.zfr.ctfzoneclient.service.view
 
 import android.app.IntentService
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.content.Context
 import android.util.Log
@@ -34,7 +35,16 @@ class AuthService : IntentService("AuthService") {
 
     private val TAG = "AuthService"
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        Log.d(TAG, "Started")
+
+        return Service.START_REDELIVER_INTENT
+    }
+
     override fun onHandleIntent(intent: Intent?) {
+        Log.d(TAG, intent?.action)
+
         when (intent?.action) {
             ACTION_AUTH_REGISTRATION -> {
                 val pendingIntent = intent.getParcelableExtra<PendingIntent>(EXTRA_PENDING_INTENT)
@@ -57,23 +67,21 @@ class AuthService : IntentService("AuthService") {
         val authApi = ControllerApi().getAuthApi()
         val refresh_token = authApi.register(user)
 
-        Log.d(TAG, "I'm here 1!!")
         refresh_token.enqueue(object : Callback<ResponseData<TokenNetworkEntity>> {
 
             override fun onResponse(
                 call: Call<ResponseData<TokenNetworkEntity>>,
                 response: Response<ResponseData<TokenNetworkEntity>>
             ) {
-                Log.d(TAG, "I'm here 2!!")
                 if (response.code() == 200) {
                     val responseData = response.body()!!
-                    Log.d(TAG, "I'm here!!")
+
                     pendingIntent?.send(applicationContext, 0, responseData.data!!.asIntent(Intent()))
                 }
             }
 
             override fun onFailure(call: Call<ResponseData<TokenNetworkEntity>>, t: Throwable) {
-                Log.d(TAG, "I'm here (( !!")
+
                 Log.d(TAG, "Error - ${t.message}")
             }
         })
@@ -106,6 +114,11 @@ class AuthService : IntentService("AuthService") {
             }
         })
         // ...
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "Destroy")
+        super.onDestroy()
     }
 
     companion object {

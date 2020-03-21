@@ -2,6 +2,7 @@ package com.zfr.ctfzoneclient.service.view
 
 import android.app.IntentService
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.content.Context
 import android.util.Log
@@ -32,7 +33,16 @@ class TestService : IntentService("TestService") {
 
     private val TAG = "TestService"
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        Log.d(TAG, "Started")
+
+        return Service.START_REDELIVER_INTENT
+    }
+
     override fun onHandleIntent(intent: Intent?) {
+        Log.d(TAG, intent?.action)
+
         when (intent?.action) {
             ACTION_TEST_REGISTER -> {
 
@@ -87,5 +97,10 @@ class TestService : IntentService("TestService") {
         intent_remote.putExtra(EXTRA_PENDING_INTENT, pendingIntent)
 
         startService(intent_remote)
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "Destroy")
+        super.onDestroy()
     }
 }
