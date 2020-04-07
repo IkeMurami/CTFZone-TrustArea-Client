@@ -10,13 +10,18 @@ import android.widget.Toast
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 import com.zfr.ctfzoneclient.service.data.asUserNetworkEntity
 import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.database.getDatabase
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
+import com.zfr.ctfzoneclient.network.data.asDatabaseEntity
 import com.zfr.ctfzoneclient.service.data.asIntent
 import com.zfr.ctfzoneclient.service.data.asTokenNetworkEntity
 
 // IntentService can perform, e.g. ACTION_TEST
 private const val ACTION_TEST_REGISTER = "${PACKAGE_ID}.action.TEST_REGISTER"
 private const val ACTION_TEST_SESSION = "${PACKAGE_ID}.action.TEST_SESSION"
+
+// ACTION POC
+private const val ACTION_TEST_POC_ROOM_SQLI = "${PACKAGE_ID}.action.TEST_ROOM_SQLI"
 
 private const val ACTION_PENDING_INTENT_RETURN_VALUE = "${PACKAGE_ID}.action.RETURN"
 
@@ -35,7 +40,6 @@ class TestService : IntentService("TestService") {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        Log.d(TAG, "Started")
 
         return Service.START_REDELIVER_INTENT
     }
@@ -58,7 +62,38 @@ class TestService : IntentService("TestService") {
 
                 handleActionResult(intent)
             }
+
+            // PoC
+            ACTION_TEST_POC_ROOM_SQLI -> {
+                handleActionPoC_ROOM_SQLi()
+            }
         }
+    }
+
+    private fun handleActionPoC_ROOM_SQLi() {
+        Log.d(TAG, "PoC Room SQLi Started")
+        val db = getDatabase(applicationContext).userDao
+        val user = UserNetworkEntity(
+            username = "Testuser",
+            first_name = "FN Testuser",
+            last_name = "LN Testuser",
+            user_id = "ID Testuser"
+        ).asDatabaseEntity()
+
+        db.insertUser(user)
+
+        Log.d(TAG, "PoC Room SQLi Insert user to table")
+        var user1 = db.getUser("ID Testuser")
+        Log.d(TAG, user1.toString())
+
+        user1 = db.getUser("ID %")
+        Log.d(TAG, user1.toString())
+
+        user1 = db.getUser("ID blabla OR 1=1 ")
+        Log.d(TAG, user1.toString())
+
+
+        Log.d(TAG, "PoC Room SQLi End")
     }
 
     private fun handleActionResult(intent: Intent) {

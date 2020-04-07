@@ -8,13 +8,17 @@ import android.content.Context
 import android.util.Log
 import com.zfr.ctfzoneclient.network.ControllerApi
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
-import com.zfr.ctfzoneclient.service.data.asIntent
-import com.zfr.ctfzoneclient.service.data.asUserNetworkEntity
 
 import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.database.getDatabase
+import com.zfr.ctfzoneclient.network.data.OtherNetworkEntity
 import com.zfr.ctfzoneclient.network.data.ResponseData
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
-import com.zfr.ctfzoneclient.service.data.asTokenNetworkEntity
+import com.zfr.ctfzoneclient.repository.*
+import com.zfr.ctfzoneclient.service.data.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -24,7 +28,7 @@ import retrofit2.Response
 private const val ACTION_AUTH_REGISTRATION = "${PACKAGE_ID}.action.AUTH_REGISTRATION"  // request refresh token
 private const val ACTION_AUTH_SESSION = "${PACKAGE_ID}.action.AUTH_SESSION"  // refresh token -> session
 
-private const val EXTRA_PENDING_INTENT = "PENDING_INTENT"  // for return result
+
 
 /**
  * An AuthService subclass for handling asynchronous task requests in
@@ -35,26 +39,39 @@ class AuthService : IntentService("AuthService") {
 
     private val TAG = "AuthService"
 
+    private lateinit var logger: LogRepository
+    private lateinit var userRepository: UsersRepository
+    private lateinit var sessionRepository: SessionRepository
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        Log.d(TAG, "Started")
+        logger = getLogger(applicationContext)
+        userRepository = getUserRepository(applicationContext)
+        sessionRepository = getSessionRepo(applicationContext)
+
+        logger.info(TAG, "Started")
 
         return Service.START_REDELIVER_INTENT
     }
 
     override fun onHandleIntent(intent: Intent?) {
-        Log.d(TAG, intent?.action)
+        logger = getLogger(applicationContext)
+        logger.debug(TAG, intent?.action!!)
 
         when (intent?.action) {
             ACTION_AUTH_REGISTRATION -> {
-                val pendingIntent = intent.getParcelableExtra<PendingIntent>(EXTRA_PENDING_INTENT)
+                val user = intent.asUserNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
 
-                handleActionAuthRegistration(intent.asUserNetworkEntity(), pendingIntent)
+                logger.info(TAG, "Registration ${user}")
+                handleActionAuthRegistration(user, pendingIntent)
             }
             ACTION_AUTH_SESSION -> {
-                val pendingIntent = intent.getParcelableExtra<PendingIntent>(EXTRA_PENDING_INTENT)
+                val token = intent.asTokenNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
 
-                handleActionGetSession(intent.asTokenNetworkEntity(), pendingIntent)
+                logger.info(TAG, "Authorization ${token}")
+                handleActionGetSession(token, pendingIntent)
             }
         }
     }
@@ -65,27 +82,44 @@ class AuthService : IntentService("AuthService") {
      */
     private fun handleActionAuthRegistration(user: UserNetworkEntity, pendingIntent: PendingIntent?) {
         val authApi = ControllerApi().getAuthApi()
-        val refresh_token = authApi.register(user)
+        val refreshTokenReq = authApi.register(user)
 
-        refresh_token.enqueue(object : Callback<ResponseData<TokenNetworkEntity>> {
-
+        refreshTokenReq.enqueue(object : Callback<com.zfr.ctfzoneclient.network.data.Response<ResponseData>> {
             override fun onResponse(
-                call: Call<ResponseData<TokenNetworkEntity>>,
-                response: Response<ResponseData<TokenNetworkEntity>>
+                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
+                response: Response<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>
             ) {
-                if (response.code() == 200) {
-                    val responseData = response.body()!!
+                if (response.isSuccessful) {
+                    val refreshToken = response.body()!!.data as TokenNetworkEntity
+                    logger.info(TAG, "Cache reg data")
 
-                    pendingIntent?.send(applicationContext, 0, responseData.data!!.asIntent(Intent()))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        userRepository.updateUserInfo(user.username!!)
+                        sessionRepository.cacheToken(refreshToken, user)
+                    }
+
+                    // send response to other component
+                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+                    pendingIntent?.send(applicationContext, 0, refreshToken.asIntent(Intent()))
+                }
+                else {
+                    val resp = response.body()!!
+                    logger.info(TAG, "Return message: ${resp.message}; errors: ${resp.errors}")
+                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+
+                    pendingIntent?.send(applicationContext, 0, errorIntent(resp.message, resp.errors))
                 }
             }
 
-            override fun onFailure(call: Call<ResponseData<TokenNetworkEntity>>, t: Throwable) {
-
-                Log.d(TAG, "Error - ${t.message}")
+            override fun onFailure(
+                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
+                t: Throwable
+            ) {
+                logger.info(TAG, "Request failure: ${t.localizedMessage}")
+                pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(t.localizedMessage)))
             }
         })
-        // ...
+
     }
 
     /**
@@ -94,51 +128,71 @@ class AuthService : IntentService("AuthService") {
      */
     private fun handleActionGetSession(token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
         val authApi = ControllerApi().getAuthApi()
-        val access_token = authApi.session(token)
+        val accessTokenReq = authApi.session(token)
 
-        access_token.enqueue(object : Callback<ResponseData<TokenNetworkEntity>> {
-
+        accessTokenReq.enqueue(object : Callback<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>{
             override fun onResponse(
-                call: Call<ResponseData<TokenNetworkEntity>>,
-                response: Response<ResponseData<TokenNetworkEntity>>
+                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
+                response: Response<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>
             ) {
-                if (response.code() == 200) {
-                    val responseData = response.body()!!
+                if (response.isSuccessful) {
+                    val accessToken = response.body()!!.data as TokenNetworkEntity
+                    logger.info(TAG, "Cache auth data")
 
-                    pendingIntent?.send(applicationContext, 0, responseData.data!!.asIntent(Intent()))
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val user = userRepository.userInfo(accessToken)
+
+                        sessionRepository.cacheToken(accessToken, (user as com.zfr.ctfzoneclient.network.data.Response<UserNetworkEntity>).data)
+                    }
+                    pendingIntent?.send(applicationContext, 0, accessToken.asIntent(Intent()))
+                }
+                else {
+                    val resp = response.body()!!
+                    logger.info(TAG, "Return message: ${resp.message}; errors: ${resp.errors}")
+                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+
+                    pendingIntent?.send(applicationContext, 0, errorIntent(resp.message, resp.errors))
                 }
             }
 
-            override fun onFailure(call: Call<ResponseData<TokenNetworkEntity>>, t: Throwable) {
-
+            override fun onFailure(
+                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
+                t: Throwable
+            ) {
+                logger.info(TAG, "Request failure: ${t.localizedMessage}")
+                pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(t.localizedMessage)))
             }
         })
-        // ...
+
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "Destroy")
+        logger.info(TAG, "Destroy")
         super.onDestroy()
     }
 
     companion object {
+
+
         @JvmStatic
         fun startActionAuthRegistration(context: Context, user: UserNetworkEntity) {
-            var intent = Intent(context, AuthService::class.java).apply {
+            val intent = Intent(context, AuthService::class.java).apply {
                 action = ACTION_AUTH_REGISTRATION
+            }.let {
+                    intent -> user.asIntent(intent)
             }
-            intent = user.asIntent(intent)
 
             context.startService(intent)
         }
 
         @JvmStatic
         fun startActionGetSession(context: Context, refresh_token: TokenNetworkEntity) {
-            var intent = Intent(context, AuthService::class.java).apply {
+            val intent = Intent(context, AuthService::class.java).apply {
                 action = ACTION_AUTH_SESSION
+            }.let {
+                intent -> refresh_token.asIntent(intent)
             }
 
-            intent = refresh_token.asIntent(intent)
             context.startService(intent)
         }
     }

@@ -1,5 +1,6 @@
 package com.zfr.ctfzoneclient.network.data
 
+
 enum class LogType(log_type: String) {
     verbose("verbose"),
     info("info"),

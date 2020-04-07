@@ -8,11 +8,11 @@ import com.zfr.ctfzoneclient.database.data.UserDBEntity
 @Dao
 interface UserDao  {
 
-    @Query("SELECT * FROM UserDBEntity WHERE user_id LIKE :user_id")
-    fun getUser(user_id: String): LiveData<UserDBEntity>
+    @Query("SELECT * FROM ${UserDBEntity.TABLE_NAME} WHERE user_id LIKE :user_id")
+    fun getUser(user_id: String): UserDBEntity?
 
-    @Query("SELECT * FROM UserDBEntity")
-    fun getUsers(): LiveData<List<UserDBEntity>>
+    @Query("SELECT * FROM ${UserDBEntity.TABLE_NAME}")
+    fun getUsers(): List<UserDBEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertUsers(users: List<UserDBEntity>)

@@ -11,6 +11,7 @@ import retrofit2.Callback
 import okhttp3.Credentials
 import retrofit2.Call
 import retrofit2.Response
+import retrofit2.await
 
 private const val PACKAGE_ID = "com.zfr.ctfzoneclient"
 
@@ -48,27 +49,7 @@ class UserService : IntentService("UserService") {
      * parameters.
      */
     private fun handleActionCreateUser(user_name: String?) {
-        Toast.makeText(this, "Action Create UserNetworkEntity", Toast.LENGTH_LONG).show()
-        Log.d("Test", "handleActionCreateUser Called")
 
-        val credentials = Credentials.basic("admin", "password")
-        val users = ControllerApi().getUserApi().users(credentials)
-
-        users.enqueue(object : Callback<List<UserNetworkEntity>> {
-                override fun onResponse(call: Call<List<UserNetworkEntity>>, response: Response<List<UserNetworkEntity>>) {
-                    if (response.code() == 200) {
-                        val responseUsers = response.body()!!
-                        for (usr in responseUsers) {
-                            Log.d("Return user:", usr.username)
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<List<UserNetworkEntity>>, t: Throwable) {
-
-                }
-            }
-        )
     }
 
     /**
@@ -76,7 +57,7 @@ class UserService : IntentService("UserService") {
      * parameters.
      */
     private fun handleActionGetUser(user_name: String?) {
-        Log.d("Test", "handleActionGetUser Called")
+
     }
 
     companion object {

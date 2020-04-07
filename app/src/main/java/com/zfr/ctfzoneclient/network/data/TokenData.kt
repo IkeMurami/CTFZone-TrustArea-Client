@@ -1,6 +1,7 @@
 package com.zfr.ctfzoneclient.network.data
 
 import com.google.gson.annotations.SerializedName
+import com.zfr.ctfzoneclient.database.data.TokenDBEntity
 
 enum class TokenType(token_type: String) {
     bearer("bearer"),
@@ -9,16 +10,16 @@ enum class TokenType(token_type: String) {
     session("session")
 }
 
-enum class Scope {
-    ORDERS,
-    USERS
+
+
+
+fun TokenNetworkEntity.asDatabaseEntity(user: UserNetworkEntity): TokenDBEntity {
+
+    return TokenDBEntity(
+        username = user.username!!,
+        token = this.token,
+        token_type = this.token_type.name,
+        expired = this.expired
+    )
+
 }
-
-data class TokenNetworkEntity (
-
-    @SerializedName("token_type") val token_type: TokenType = TokenType.access,
-    @SerializedName("token") val token: String,
-    @SerializedName("expired") val expired: Long = 0
-
-)
-

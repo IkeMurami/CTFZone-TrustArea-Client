@@ -4,21 +4,23 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.zfr.ctfzoneclient.database.data.OrderDBEntity
-import com.zfr.ctfzoneclient.database.data.UserDBEntity
-import com.zfr.ctfzoneclient.database.tables.OrderDao
-import com.zfr.ctfzoneclient.database.tables.UserDao
+import com.zfr.ctfzoneclient.database.data.*
+import com.zfr.ctfzoneclient.database.tables.*
 
 @Database(
     entities = [
-        OrderDBEntity::class,
-        UserDBEntity::class
+        UserDBEntity::class,
+        LogDBEntity::class,
+        TaskDBEntity::class,
+        TokenDBEntity::class
     ],
     version = 1
 )
 abstract class CTFZoneDatabase: RoomDatabase() {
-    abstract val orderDao: OrderDao
     abstract val userDao: UserDao
+    abstract val logDao: LogDao
+    abstract val taskDao: TaskDao
+    abstract val tokenDao: SessionDao
 }
 
 private val DATABASE_NAME = "ctfzonedb"

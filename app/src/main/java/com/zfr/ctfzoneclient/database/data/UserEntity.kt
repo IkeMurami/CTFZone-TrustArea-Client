@@ -7,14 +7,18 @@ import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 /**
  * UserDBEntity represents a user entity in the database
  */
-@Entity
+@Entity(tableName = UserDBEntity.TABLE_NAME)
 data class UserDBEntity constructor(
     @PrimaryKey
     val user_id: String,
     val user_name: String,
     val first_name: String,
     val last_name: String
-)
+){
+    companion object {
+        const val TABLE_NAME = "users"
+    }
+}
 
 
 /**
@@ -29,5 +33,14 @@ fun List<UserDBEntity>.asDomainModel(): List<UserNetworkEntity> {
             last_name = it.last_name
         )
     }
+}
+
+fun UserDBEntity.asDomainModel(): UserNetworkEntity {
+    return UserNetworkEntity(
+        username = this.user_name,
+        user_id = this.user_id,
+        first_name = this.first_name,
+        last_name = this.last_name
+    )
 }
 

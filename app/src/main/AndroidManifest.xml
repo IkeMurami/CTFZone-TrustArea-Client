@@ -11,25 +11,20 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <service
+            android:name=".service.view.TaskService"
+            android:exported="false"></service>
+        <service
+            android:name=".service.view.SolutionService"
+            android:exported="false" />
+        <service
+            android:name=".service.view.LogService"
+            android:exported="false" />
         <service
             android:name=".service.view.TestService"
             android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="${applicationId}.action.TEST_REGISTER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="${applicationId}.action.TEST_SESSION" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="${applicationId}.action.RETURN" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name=".service.view.OrderService"
             android:exported="true" />
+
         <service
             android:name=".service.view.AuthService"
             android:enabled="true"
@@ -64,7 +59,6 @@
             android:name=".service.LaunchService"
             android:enabled="true"
             android:exported="true" />
-
     </application>
 
 </manifest>

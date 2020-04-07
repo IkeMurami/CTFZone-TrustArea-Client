@@ -1,13 +1,29 @@
 package com.zfr.ctfzoneclient.network.data
 
 import com.google.gson.annotations.SerializedName
+import com.zfr.ctfzoneclient.database.data.UserDBEntity
 
 
-data class UserNetworkEntity (
 
-    @SerializedName("username") val username: String?,
-    @SerializedName("first_name") val first_name: String? = null,
-    @SerializedName("last_name") val last_name: String? = null,
-    @SerializedName("user_id") val user_id: String? = null
+fun List<UserNetworkEntity>.asDatabaseEntity(): List<UserDBEntity> {
+    return map {
+        UserDBEntity(
+            user_id = it.user_id!!,
+            user_name = it.username!!,
+            first_name = it.first_name!!,
+            last_name = it.last_name!!
+        )
+    }
+}
 
-)
+
+
+fun UserNetworkEntity.asDatabaseEntity(): UserDBEntity {
+    return UserDBEntity(
+        user_id = this.user_id!!,
+        user_name = this.username!!,
+        first_name = this.first_name!!,
+        last_name = this.last_name!!
+    )
+}
+

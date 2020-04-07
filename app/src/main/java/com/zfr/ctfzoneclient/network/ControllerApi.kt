@@ -8,9 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 import com.zfr.ctfzoneclient.BuildConfig
-import com.zfr.ctfzoneclient.network.interfaces.AuthApi
-import com.zfr.ctfzoneclient.network.interfaces.OrderApi
-import com.zfr.ctfzoneclient.network.interfaces.UserApi
+import com.zfr.ctfzoneclient.network.interfaces.*
 import java.util.concurrent.TimeUnit
 
 
@@ -40,7 +38,7 @@ class ControllerApi {
         return retrofit.create(UserApi::class.java)
     }
 
-    fun getOrderApi(): OrderApi {
+    fun getTaskApi(): TaskApi {
         val retrofit = Retrofit.Builder()
             .client(client.build())
             .baseUrl(BASE_URL)
@@ -48,7 +46,18 @@ class ControllerApi {
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()
 
-        return retrofit.create(OrderApi::class.java)
+        return retrofit.create(TaskApi::class.java)
+    }
+
+    fun getSolutionApi(): SolutionApi {
+        val retrofit = Retrofit.Builder()
+            .client(client.build())
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+
+        return retrofit.create(SolutionApi::class.java)
     }
 
     fun getAuthApi(): AuthApi {
@@ -62,5 +71,14 @@ class ControllerApi {
         return retrofit.create(AuthApi::class.java)
     }
 
-    fun getLoggingApi() {}
+    fun getLoggingApi(): LogApi {
+        val retrofit = Retrofit.Builder()
+            .client(client.build())
+            .baseUrl(BASE_URL)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .build()
+
+        return retrofit.create(LogApi::class.java)
+    }
 }

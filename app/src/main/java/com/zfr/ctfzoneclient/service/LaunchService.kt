@@ -26,7 +26,7 @@ class LaunchService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Toast.makeText(this, "Service Started!!!!", Toast.LENGTH_LONG).show()
+
         return super.onStartCommand(intent, flags, startId)
     }
 
