@@ -6,22 +6,26 @@ import android.app.Service
 import android.content.Intent
 import android.content.Context
 import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.zfr.ctfzoneclient.network.ControllerApi
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 
 import com.zfr.ctfzoneclient.PACKAGE_ID
-import com.zfr.ctfzoneclient.database.getDatabase
-import com.zfr.ctfzoneclient.network.data.OtherNetworkEntity
-import com.zfr.ctfzoneclient.network.data.ResponseData
+import com.zfr.ctfzoneclient.core.ResponseErrorException
+import com.zfr.ctfzoneclient.network.data.ErrorNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
+import com.zfr.ctfzoneclient.network.data.asErrorNetworkEntity
 import com.zfr.ctfzoneclient.repository.*
 import com.zfr.ctfzoneclient.service.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.Exception
 
 
 // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
@@ -43,6 +47,25 @@ class AuthService : IntentService("AuthService") {
     private lateinit var userRepository: UsersRepository
     private lateinit var sessionRepository: SessionRepository
 
+    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+        pendingIntent?.send(applicationContext, 0, intent)
+    }
+
+    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
+        val error = errorBody?.asErrorNetworkEntity()
+        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
+    }
+
+    fun sendException(pendingIntent: PendingIntent?, message: String) {
+        logger.info(TAG, "Request failure: ${message}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         logger = getLogger(applicationContext)
@@ -56,7 +79,7 @@ class AuthService : IntentService("AuthService") {
 
     override fun onHandleIntent(intent: Intent?) {
         logger = getLogger(applicationContext)
-        logger.debug(TAG, intent?.action!!)
+        logger.info(TAG, intent?.action!!)
 
         when (intent?.action) {
             ACTION_AUTH_REGISTRATION -> {
@@ -81,44 +104,28 @@ class AuthService : IntentService("AuthService") {
      * parameters.
      */
     private fun handleActionAuthRegistration(user: UserNetworkEntity, pendingIntent: PendingIntent?) {
-        val authApi = ControllerApi().getAuthApi()
-        val refreshTokenReq = authApi.register(user)
 
-        refreshTokenReq.enqueue(object : Callback<com.zfr.ctfzoneclient.network.data.Response<ResponseData>> {
-            override fun onResponse(
-                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
-                response: Response<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>
-            ) {
-                if (response.isSuccessful) {
-                    val refreshToken = response.body()!!.data as TokenNetworkEntity
-                    logger.info(TAG, "Cache reg data")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val refreshToken = sessionRepository.regUser(user)
+                val sessionToken = sessionRepository.getSession(refreshToken!!)
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        userRepository.updateUserInfo(user.username!!)
-                        sessionRepository.cacheToken(refreshToken, user)
-                    }
+                logger.info(TAG, "Cache reg data")
 
-                    // send response to other component
-                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-                    pendingIntent?.send(applicationContext, 0, refreshToken.asIntent(Intent()))
-                }
-                else {
-                    val resp = response.body()!!
-                    logger.info(TAG, "Return message: ${resp.message}; errors: ${resp.errors}")
-                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+                userRepository.updateProfile(sessionToken!!)  // user and session token already cached
+                sessionRepository.cacheToken(refreshToken, user)
+                // sessionRepository.cacheToken(sessionToken, user)
 
-                    pendingIntent?.send(applicationContext, 0, errorIntent(resp.message, resp.errors))
-                }
+                sendSuccess(pendingIntent, refreshToken?.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
             }
 
-            override fun onFailure(
-                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
-                t: Throwable
-            ) {
-                logger.info(TAG, "Request failure: ${t.localizedMessage}")
-                pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(t.localizedMessage)))
-            }
-        })
+        }
 
     }
 
@@ -127,42 +134,23 @@ class AuthService : IntentService("AuthService") {
      * parameters.
      */
     private fun handleActionGetSession(token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
-        val authApi = ControllerApi().getAuthApi()
-        val accessTokenReq = authApi.session(token)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val sessionToken = sessionRepository.getSession(token)
 
-        accessTokenReq.enqueue(object : Callback<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>{
-            override fun onResponse(
-                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
-                response: Response<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>
-            ) {
-                if (response.isSuccessful) {
-                    val accessToken = response.body()!!.data as TokenNetworkEntity
-                    logger.info(TAG, "Cache auth data")
+                // for update cache info
+                val user = userRepository.userInfo(sessionToken!!)
 
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val user = userRepository.userInfo(accessToken)
-
-                        sessionRepository.cacheToken(accessToken, (user as com.zfr.ctfzoneclient.network.data.Response<UserNetworkEntity>).data)
-                    }
-                    pendingIntent?.send(applicationContext, 0, accessToken.asIntent(Intent()))
-                }
-                else {
-                    val resp = response.body()!!
-                    logger.info(TAG, "Return message: ${resp.message}; errors: ${resp.errors}")
-                    logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-
-                    pendingIntent?.send(applicationContext, 0, errorIntent(resp.message, resp.errors))
-                }
+                sendSuccess(pendingIntent, sessionToken?.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
             }
 
-            override fun onFailure(
-                call: Call<com.zfr.ctfzoneclient.network.data.Response<ResponseData>>,
-                t: Throwable
-            ) {
-                logger.info(TAG, "Request failure: ${t.localizedMessage}")
-                pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(t.localizedMessage)))
-            }
-        })
+        }
 
     }
 

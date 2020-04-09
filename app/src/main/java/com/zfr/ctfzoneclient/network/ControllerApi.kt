@@ -27,7 +27,7 @@ class ControllerApi {
         .connectTimeout(10, TimeUnit.SECONDS)
         .addInterceptor(loggingInterceptor)
 
-    fun getUserApi(): UserApi {
+    fun retrofit(): Retrofit {
         val retrofit = Retrofit.Builder()
             .client(client.build())
             .baseUrl(BASE_URL)
@@ -35,50 +35,17 @@ class ControllerApi {
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             //.addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
-        return retrofit.create(UserApi::class.java)
+
+        return retrofit
     }
 
-    fun getTaskApi(): TaskApi {
-        val retrofit = Retrofit.Builder()
-            .client(client.build())
-            .baseUrl(BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
+    fun getUserApi(): UserApi = retrofit().create(UserApi::class.java)
 
-        return retrofit.create(TaskApi::class.java)
-    }
+    fun getTaskApi(): TaskApi = retrofit().create(TaskApi::class.java)
 
-    fun getSolutionApi(): SolutionApi {
-        val retrofit = Retrofit.Builder()
-            .client(client.build())
-            .baseUrl(BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
+    fun getSolutionApi(): SolutionApi = retrofit().create(SolutionApi::class.java)
 
-        return retrofit.create(SolutionApi::class.java)
-    }
+    fun getAuthApi(): AuthApi = retrofit().create(AuthApi::class.java)
 
-    fun getAuthApi(): AuthApi {
-        val retrofit = Retrofit.Builder()
-            .client(client.build())
-            .baseUrl(BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
-
-        return retrofit.create(AuthApi::class.java)
-    }
-
-    fun getLoggingApi(): LogApi {
-        val retrofit = Retrofit.Builder()
-            .client(client.build())
-            .baseUrl(BASE_URL)
-            .addConverterFactory(MoshiConverterFactory.create())
-            .addCallAdapterFactory(CoroutineCallAdapterFactory())
-            .build()
-
-        return retrofit.create(LogApi::class.java)
-    }
+    fun getLoggingApi(): LogApi = retrofit().create(LogApi::class.java)
 }

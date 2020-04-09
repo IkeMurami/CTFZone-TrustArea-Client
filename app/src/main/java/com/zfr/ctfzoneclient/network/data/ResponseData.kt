@@ -1,7 +1,13 @@
 package com.zfr.ctfzoneclient.network.data
 
 import android.content.Intent
+import android.os.Parcelable
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
+import kotlinx.android.parcel.Parcelize
+import okhttp3.ResponseBody
+import java.io.Serializable
 import java.io.StringReader
 
 
@@ -11,7 +17,7 @@ enum class RespondStatus(status: String) {
     failure("failure")
 }
 
-sealed class ResponseData
+sealed class ResponseData : Serializable
 
 data class Response<Data> (
 
@@ -61,7 +67,15 @@ data class SolutionNetworkEntity(
 ) : ResponseData()
 
 
-object OtherNetworkEntity: ResponseData()
+object ErrorNetworkEntity: ResponseData()
+
+fun ResponseBody.asErrorNetworkEntity(): Response<ErrorNetworkEntity>? {
+    val gson = Gson()
+    val type = object : TypeToken<Response<ErrorNetworkEntity>>(){}.type
+    val errorBody: com.zfr.ctfzoneclient.network.data.Response<ErrorNetworkEntity>? = gson.fromJson(this.charStream(), type)
+
+    return errorBody
+}
 
 
 

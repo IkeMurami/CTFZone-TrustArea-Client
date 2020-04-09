@@ -14,6 +14,7 @@ import com.zfr.ctfzoneclient.network.data.LogNetworkEntity
 import com.zfr.ctfzoneclient.network.data.LogType
 import com.zfr.ctfzoneclient.network.data.ResponseData
 import kotlinx.coroutines.*
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,12 +56,25 @@ class LogRepository(private val database: CTFZoneDatabase) {
         database.logDao.deleteLogQueries()
     }
 
+    fun sendRecord(record: LogDBEntity) {
+        val api = ControllerApi().getLoggingApi()
+        api.report(record.asDomainModel()).enqueue(object : Callback<ResponseBody> {
+
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {}
+        })
+    }
+
     /*
      * insert log record
      */
     private fun insert(tag: String, message: String) {
         val record = LogDBEntity(log_type = LogType.debug.name, message = "${tag} - ${message}")
         database.logDao.insert(record)
+        sendRecord(record)
     }
 
     fun verbose(tag: String, message: String) {

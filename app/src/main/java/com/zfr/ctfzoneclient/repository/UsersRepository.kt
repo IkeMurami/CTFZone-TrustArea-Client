@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
+import com.zfr.ctfzoneclient.core.InvalidTokenException
+import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.database.CTFZoneDatabase
 import com.zfr.ctfzoneclient.database.data.asDomainModel
 import com.zfr.ctfzoneclient.database.getDatabase
@@ -26,27 +28,50 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
     /*
      * [Username] -> [User] + update
      */
-    suspend fun updateUserInfo(username: String): Response<ResponseData>? {
+    suspend fun updateUserInfo(username: String): UserNetworkEntity? {
+
         logger.info(TAG, "Update info for user ${username}")
 
-        val user = ControllerApi().getUserApi().user(username).await()
-        when(user.data) {
-            is UserNetworkEntity -> {
-                database.userDao.insertUser(user.data?.asDatabaseEntity()!!)
-                logger.info(TAG, "Updated info: ${user.data}")
-            }
-            is OtherNetworkEntity -> {
-                logger.info(TAG, "Request failure. message: ${user.message}")
-            }
-        }
+        val userResp = ControllerApi().getUserApi().user(username).execute()
+        if (userResp.isSuccessful) {
+            val user = userResp.body()?.data
+            database.userDao.insertUser(user?.asDatabaseEntity()!!)
+            logger.info(TAG, "Updated info: ${user}")
 
-        return user
+            return user
+        }
+        else {
+            throw ResponseErrorException("User already exist", userResp.errorBody()!!)
+        }
+    }
+
+    /*
+     * [Session Token] -> [User<Me>]
+     */
+    suspend fun updateProfile(token: TokenNetworkEntity): UserNetworkEntity? {
+        logger.info(TAG, "Update info for user with token ${token.token}")
+
+        val meResp = ControllerApi().getUserApi().profile(token.token).execute()
+
+        if (meResp.isSuccessful) {
+            val user = meResp.body()?.data
+
+            logger.info(TAG, "Updated info: ${user}")
+
+            database.userDao.insertUser(user?.asDatabaseEntity()!!)
+            database.tokenDao.insertSession(token.asDatabaseEntity(user))
+
+            return user
+        }
+        else {
+            throw ResponseErrorException("Invalid token", meResp.errorBody()!!)
+        }
     }
 
     /*
      * [Username] -> [User]
      */
-    suspend fun userInfo(username: String): Response<ResponseData>? {
+    suspend fun userInfo(username: String): UserNetworkEntity? {
         // get local
         logger.info(TAG, "Get user info by username ${username}")
 
@@ -58,25 +83,39 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
         }
         else {
             logger.info(TAG, "User found: ${user}")
-            return Response(data = user.asDomainModel())
+            return user.asDomainModel()
         }
     }
 
     /*
      * [Token] -> [User]
      */
-    suspend fun userInfo(token: TokenNetworkEntity): Response<ResponseData>? {
+    suspend fun userInfo(token: TokenNetworkEntity): UserNetworkEntity? {
         logger.info(TAG, "Get user info by token: ${token}")
-        val username = sessionRepository.userByToken(token)
+        val user = updateProfile(token)
 
-        if (username.isNullOrBlank()) {
-            logger.info(TAG, "Token invalid: ${token}")
-            return Response(message = "Token invalid")
+        if (user == null) {
+            logger.info(TAG, "User not found by token ${token}")
+            throw InvalidTokenException("Invalid token")
         }
         else {
-            return userInfo(username)
+            return user
         }
+    }
 
+    suspend fun usersList(): List<UserNetworkEntity> {
+        logger.info(TAG, "Get list users")
+        val usersResp = ControllerApi().getUserApi().users().execute()
+        if (usersResp.isSuccessful) {
+            val users = usersResp.body()?.data
+
+            logger.info(TAG, "Fetch ${users?.size} users")
+
+            return users!!
+        }
+        else {
+            throw ResponseErrorException("Invalid token", usersResp.errorBody()!!)
+        }
     }
 }
 

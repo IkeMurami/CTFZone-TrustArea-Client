@@ -9,7 +9,7 @@ import com.zfr.ctfzoneclient.database.data.TaskDBEntity
 interface TaskDao {
 
     @Query("SELECT * FROM TaskDBEntity WHERE owner_id LIKE :user_id AND task_id LIKE :task_id")
-    fun task(user_id: String, task_id: Int): TaskDBEntity
+    fun task(user_id: String, task_id: Int): TaskDBEntity?
 
     @Query("SELECT * FROM TaskDBEntity WHERE owner_id LIKE :user_id")
     fun tasks(user_id: String): List<TaskDBEntity>

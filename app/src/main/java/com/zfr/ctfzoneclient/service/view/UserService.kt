@@ -1,6 +1,8 @@
 package com.zfr.ctfzoneclient.service.view
 
 import android.app.IntentService
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.content.Context
 import android.util.Log
@@ -12,15 +14,24 @@ import okhttp3.Credentials
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.await
+import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.core.ResponseErrorException
+import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
+import com.zfr.ctfzoneclient.network.data.asErrorNetworkEntity
+import com.zfr.ctfzoneclient.repository.LogRepository
+import com.zfr.ctfzoneclient.repository.UsersRepository
+import com.zfr.ctfzoneclient.repository.getLogger
+import com.zfr.ctfzoneclient.repository.getUserRepository
+import com.zfr.ctfzoneclient.service.data.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import java.lang.Exception
 
-private const val PACKAGE_ID = "com.zfr.ctfzoneclient"
-
-// IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-private const val ACTION_CREATE_USER = "${PACKAGE_ID}.action.CREATE_USER"
 private const val ACTION_GET_USER = "${PACKAGE_ID}.action.GET_USER"
-private const val ACTION_EDIT_USER = "${PACKAGE_ID}.action.EDIT_USER"
-private const val ACTION_DELETE_USER = "${PACKAGE_ID}.action.DELETE_USER"
-
+private const val ACTION_GET_USERS = "${PACKAGE_ID}.action.GET_USERS"
+private const val ACTION_GET_PROFILE = "${PACKAGE_ID}.action.GET_PROFILE"
 
 /**
  * An [IntentService] subclass for handling asynchronous task requests in
@@ -29,66 +40,120 @@ private const val ACTION_DELETE_USER = "${PACKAGE_ID}.action.DELETE_USER"
  */
 class UserService : IntentService("UserService") {
 
+    private val TAG = "UserService"
+
+    private lateinit var logger: LogRepository
+    private lateinit var userRepository: UsersRepository
+
+    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+        pendingIntent?.send(applicationContext, 0, intent)
+    }
+
+    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
+        val error = errorBody?.asErrorNetworkEntity()
+        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
+    }
+
+    fun sendException(pendingIntent: PendingIntent?, message: String) {
+        logger.info(TAG, "Request failure: ${message}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+
+        logger = getLogger(applicationContext)
+        userRepository = getUserRepository(applicationContext)
+
+        logger.info(TAG, "Started")
+
+        return Service.START_REDELIVER_INTENT
+    }
+
     override fun onHandleIntent(intent: Intent?) {
+        logger = getLogger(applicationContext)
+        logger.info(TAG, intent?.action!!)
+
         when (intent?.action) {
-            ACTION_CREATE_USER -> {
-
-                // val user_name = intent.getStringExtra(USERSERVICE_EXTRA_USER_NAME)
-                // val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                // handleActionCreateUser(user_name)
-            }
             ACTION_GET_USER -> {
-                // val user_name = intent.getStringExtra(USERSERVICE_EXTRA_USER_NAME)
-                // handleActionGetUser(user_name)
+                val user = intent.asUserNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
+
+                logger.info(TAG, "Get user info by username ${user.username}")
+
+                handleActionUser(user.username, pendingIntent)
+            }
+            ACTION_GET_USERS -> {
+                val pendingIntent = intent.getPendingIntent()
+                logger.info(TAG, "Get all users info")
+
+                handleActionListUser(pendingIntent)
+            }
+            ACTION_GET_PROFILE -> {
+                val token = intent.asTokenNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
+
+                logger.info(TAG, "Get profile by token ${token.token}")
+                handleActionProfile(token, pendingIntent)
             }
         }
     }
 
-    /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
-     */
-    private fun handleActionCreateUser(user_name: String?) {
+    private fun handleActionUser(username: String?, pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val user = userRepository.userInfo(username!!)
 
+                sendSuccess(pendingIntent, user?.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
+        }
     }
 
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private fun handleActionGetUser(user_name: String?) {
+    private fun handleActionListUser(pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val users = userRepository.usersList()
 
+                sendSuccess(pendingIntent, users?.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
+        }
     }
 
-    companion object {
-        /**
-         * Starts this service to perform action Foo with the given parameters. If
-         * the service is already performing a task this action will be queued.
-         *
-         * @see IntentService
-         */
-        @JvmStatic
-        fun startActionCreateUser(context: Context, user_name: String) {
-            val intent = Intent(context, UserService::class.java).apply {
-                action = ACTION_CREATE_USER
-                // putExtra(USERSERVICE_EXTRA_USER_NAME, user_name)
-            }
-            context.startService(intent)
-        }
+    private fun handleActionProfile(token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val user = userRepository.updateProfile(token)
 
-        /**
-         * Starts this service to perform action Baz with the given parameters. If
-         * the service is already performing a task this action will be queued.
-         *
-         * @see IntentService
-         */
-        @JvmStatic
-        fun startActionGetUser(context: Context, user_name: String?) {
-            val intent = Intent(context, UserService::class.java).apply {
-                action = ACTION_GET_USER
-                // putExtra(USERSERVICE_EXTRA_USER_NAME, user_name)
+                sendSuccess(pendingIntent, user?.asIntent(Intent()))
             }
-            context.startService(intent)
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
         }
+    }
+
+    override fun onDestroy() {
+        logger.info(TAG, "Destroy")
+        super.onDestroy()
     }
 }

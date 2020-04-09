@@ -5,14 +5,17 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
+import java.lang.Exception
 
+
+class UserAlreadyRegistered(message: String) : Exception(message)
 
 interface AuthApi {
 
     @POST("auth/register")
-    fun register(@Body user:UserNetworkEntity): Call<Response<ResponseData>>  // refresh token
+    fun register(@Body user:UserNetworkEntity): Call<Response<TokenNetworkEntity>>  // refresh token
 
     @POST("auth/session")
-    fun session(@Body refresh_token:TokenNetworkEntity): Call<Response<ResponseData>>  // access_token
+    fun session(@Body refresh_token:TokenNetworkEntity): Call<Response<TokenNetworkEntity>>  // access_token
 
 }
