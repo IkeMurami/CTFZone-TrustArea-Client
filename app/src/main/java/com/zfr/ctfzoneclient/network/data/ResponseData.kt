@@ -39,9 +39,12 @@ data class TokenNetworkEntity (
 ) : ResponseData()
 
 
+data class RefreshTokenNetworkEntity (@SerializedName("refresh_token") val refresh_token: String) : ResponseData()
+
+
 data class UserNetworkEntity (
 
-    @SerializedName("username") val username: String?,
+    @SerializedName("username") val username: String? = null,
     @SerializedName("first_name") val first_name: String? = null,
     @SerializedName("last_name") val last_name: String? = null,
     @SerializedName("user_id") val user_id: String? = null

@@ -1,37 +1,74 @@
 package com.zfr.ctfzoneclient.service.view
 
 import android.app.IntentService
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Intent
 import android.content.Context
+import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.core.ResponseErrorException
+import com.zfr.ctfzoneclient.network.ControllerApi
+import com.zfr.ctfzoneclient.network.data.SolutionNetworkEntity
+import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
+import com.zfr.ctfzoneclient.network.data.asErrorNetworkEntity
+import com.zfr.ctfzoneclient.repository.LogRepository
+import com.zfr.ctfzoneclient.repository.getLogger
+import com.zfr.ctfzoneclient.repository.getTaskRepository
+import com.zfr.ctfzoneclient.service.data.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import java.lang.Exception
 
-// TODO: Rename actions, choose action names that describe tasks that this
-// IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
-private const val ACTION_FOO = "com.zfr.ctfzoneclient.service.view.action.FOO"
-private const val ACTION_BAZ = "com.zfr.ctfzoneclient.service.view.action.BAZ"
 
-// TODO: Rename parameters
-private const val EXTRA_PARAM1 = "com.zfr.ctfzoneclient.service.view.extra.PARAM1"
-private const val EXTRA_PARAM2 = "com.zfr.ctfzoneclient.service.view.extra.PARAM2"
+private const val ACTION_SOLUTION_SEND = "${PACKAGE_ID}.action.SOLUTION_SEND"
 
-/**
- * An [IntentService] subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
- */
+
+
+
 class SolutionService : IntentService("SolutionService") {
+
+    private val TAG = "SolutionService"
+    private lateinit var logger: LogRepository
+
+    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+        pendingIntent?.send(applicationContext, 0, intent)
+    }
+
+    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
+        val error = errorBody?.asErrorNetworkEntity()
+        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
+        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
+    }
+
+    fun sendException(pendingIntent: PendingIntent?, message: String) {
+        logger.info(TAG, "Request failure: ${message}")
+
+        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+
+        logger = getLogger(applicationContext)
+
+        logger.info(TAG, "Started")
+
+        return Service.START_REDELIVER_INTENT
+    }
 
     override fun onHandleIntent(intent: Intent?) {
         when (intent?.action) {
-            ACTION_FOO -> {
-                val param1 = intent.getStringExtra(EXTRA_PARAM1)
-                val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                handleActionFoo(param1, param2)
-            }
-            ACTION_BAZ -> {
-                val param1 = intent.getStringExtra(EXTRA_PARAM1)
-                val param2 = intent.getStringExtra(EXTRA_PARAM2)
-                handleActionBaz(param1, param2)
+            ACTION_SOLUTION_SEND -> {
+                val token = intent.asTokenNetworkEntity()
+                val solution = intent.asSolutionNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
+
+                handleActionSolutionSend(token, solution, pendingIntent)
             }
         }
     }
@@ -40,51 +77,27 @@ class SolutionService : IntentService("SolutionService") {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionFoo(param1: String, param2: String) {
-        TODO("Handle action Foo")
-    }
+    private fun handleActionSolutionSend(token: TokenNetworkEntity, solution: SolutionNetworkEntity, pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                ControllerApi().getSolutionApi().solve(token.token, solution).execute().let {
+                    if (it.isSuccessful) {
+                        val task = it.body()?.data
+                        logger.info(TAG, "Challenge ${task?.challenge} solve correct by user with token ${token} - ${solution}")
 
-    /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
-     */
-    private fun handleActionBaz(param1: String, param2: String) {
-        TODO("Handle action Baz")
-    }
-
-    companion object {
-        /**
-         * Starts this service to perform action Foo with the given parameters. If
-         * the service is already performing a task this action will be queued.
-         *
-         * @see IntentService
-         */
-        // TODO: Customize helper method
-        @JvmStatic
-        fun startActionFoo(context: Context, param1: String, param2: String) {
-            val intent = Intent(context, SolutionService::class.java).apply {
-                action = ACTION_FOO
-                putExtra(EXTRA_PARAM1, param1)
-                putExtra(EXTRA_PARAM2, param2)
+                        sendSuccess(pendingIntent, task?.asIntent(Intent()))
+                    }
+                    else {
+                        throw ResponseErrorException("Wrong solution", it.errorBody()!!)
+                    }
+                }
             }
-            context.startService(intent)
-        }
-
-        /**
-         * Starts this service to perform action Baz with the given parameters. If
-         * the service is already performing a task this action will be queued.
-         *
-         * @see IntentService
-         */
-        // TODO: Customize helper method
-        @JvmStatic
-        fun startActionBaz(context: Context, param1: String, param2: String) {
-            val intent = Intent(context, SolutionService::class.java).apply {
-                action = ACTION_BAZ
-                putExtra(EXTRA_PARAM1, param1)
-                putExtra(EXTRA_PARAM2, param2)
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
             }
-            context.startService(intent)
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
         }
     }
 }

@@ -8,6 +8,8 @@ private const val EXTRA_CHALLENGE   = "CHALLENGE"
 private const val EXTRA_REWARD      = "REWARD"
 private const val EXTRA_ID          = "ID"
 
+private const val EXTRA_TASKS       = "TASKS"
+
 
 fun Intent.asTaskNetworkEntity(): TaskNetworkEntity {
 
@@ -28,6 +30,12 @@ fun TaskNetworkEntity.asIntent(intent: Intent): Intent {
         putExtra(EXTRA_REWARD, reward)
         putExtra(EXTRA_ID, task_id)
     }
+
+    return intent
+}
+
+fun List<TaskNetworkEntity>.asIntent(intent: Intent): Intent {
+    intent.putExtra(EXTRA_TASKS, ArrayList(this))
 
     return intent
 }

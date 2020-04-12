@@ -1,15 +1,13 @@
 package com.zfr.ctfzoneclient.repository
 
 import android.content.Context
+import android.media.session.MediaSession
 import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.database.CTFZoneDatabase
 import com.zfr.ctfzoneclient.database.data.asDomainModel
 import com.zfr.ctfzoneclient.database.getDatabase
 import com.zfr.ctfzoneclient.network.ControllerApi
-import com.zfr.ctfzoneclient.network.data.RespondStatus
-import com.zfr.ctfzoneclient.network.data.TaskNetworkEntity
-import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
-import com.zfr.ctfzoneclient.network.data.asDatabaseEntity
+import com.zfr.ctfzoneclient.network.data.*
 import retrofit2.await
 
 
@@ -17,7 +15,7 @@ private const val TAG = "TaskRepository"
 
 class TaskRepository(private val database: CTFZoneDatabase, private val usersRepository: UsersRepository, private val logger: LogRepository) {
 
-    suspend fun create(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
+    suspend fun createTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
         // post data
         val api = ControllerApi().getTaskApi()
         api.create(token.token, task).execute().let {
@@ -26,6 +24,22 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
                 logger.info(TAG, "Create new task ${createdTask} for user with token ${token}")
                 cacheTask(createdTask!!, token)
                 return createdTask
+            }
+            else {
+                throw ResponseErrorException("Something wrong", it.errorBody()!!)
+            }
+        }
+    }
+
+    suspend fun updateTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
+        val api = ControllerApi().getTaskApi()
+        api.update(token.token, task.task_id!!, task).execute().let {
+            if (it.isSuccessful) {
+                val updatedTask = it.body()?.data
+                logger.info(TAG, "Task updated ${updatedTask}")
+
+                cacheTask(updatedTask!!, token)
+                return updatedTask
             }
             else {
                 throw ResponseErrorException("Something wrong", it.errorBody()!!)
@@ -55,6 +69,21 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
         else {
             logger.info(TAG, "Find local task ${fetchTask}")
             return fetchTask.asDomainModel()
+        }
+    }
+
+    suspend fun getAllTasks(token: TokenNetworkEntity, user: UserNetworkEntity? = null): List<TaskNetworkEntity> {
+
+        ControllerApi().getTaskApi().tasks(token.token, user?.username).execute().let{
+            if (it.isSuccessful) {
+                val tasks = it.body()?.data
+                logger.info(TAG, "Fetch ${tasks?.size} tasks ${user?.username} ${token.token}")
+
+                return tasks!!
+            }
+            else {
+                throw  ResponseErrorException("Something wrong", it.errorBody()!!)
+            }
         }
     }
 

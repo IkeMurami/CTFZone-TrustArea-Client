@@ -9,6 +9,7 @@ import com.zfr.ctfzoneclient.PACKAGE_ID
 import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.network.data.TaskNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
+import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 import com.zfr.ctfzoneclient.network.data.asErrorNetworkEntity
 import com.zfr.ctfzoneclient.repository.LogRepository
 import com.zfr.ctfzoneclient.repository.TaskRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+
 
 private const val ACTION_CREATE = "${PACKAGE_ID}.action.TASK_CREATE"
 private const val ACTION_GET    = "${PACKAGE_ID}.action.TASK_GET"
@@ -86,9 +88,21 @@ class TaskService : IntentService("TaskService") {
             }
             ACTION_ALL -> {
                 // handleActionFoo(param1, param2)
+                val token = intent.asTokenNetworkEntity()
+                val user = intent.asUserNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
+
+                logger.info(TAG, "Get all tasks by token ${token} ${user}")
+                handleActionGetAllTask(token, user, pendingIntent)
+
             }
             ACTION_UPDATE -> {
-                // handleActionFoo(param1, param2)
+                val token = intent.asTokenNetworkEntity()
+                val task = intent.asTaskNetworkEntity()
+                val pendingIntent = intent.getPendingIntent()
+
+                logger.info(TAG, "Update task ${task} by token ${token}")
+                handleActionUpdateTask(token, task, pendingIntent)
             }
         }
     }
@@ -97,7 +111,7 @@ class TaskService : IntentService("TaskService") {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val createdTask = taskRepository.create(sessionToken, task)
+                val createdTask = taskRepository.createTask(sessionToken, task)
 
                 sendSuccess(pendingIntent, createdTask?.asIntent(Intent()))
             }
@@ -112,6 +126,37 @@ class TaskService : IntentService("TaskService") {
 
     }
 
+    private fun handleActionUpdateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val updatedTask = taskRepository.updateTask(sessionToken, task)
+
+                sendSuccess(pendingIntent, updatedTask?.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
+        }
+    }
+
+    private fun handleActionGetAllTask(sessionToken: TokenNetworkEntity, user: UserNetworkEntity, pendingIntent: PendingIntent?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val allTasks = taskRepository.getAllTasks(sessionToken, user)
+
+                sendSuccess(pendingIntent, allTasks.asIntent(Intent()))
+            }
+            catch (e: ResponseErrorException) {
+                sendError(pendingIntent, e.error)
+            }
+            catch (e: Exception) {
+                sendException(pendingIntent, e.localizedMessage!!)
+            }
+        }
+    }
 
     private fun handleActionGetTask(task: TaskNetworkEntity, token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
         CoroutineScope(Dispatchers.IO).launch {

@@ -8,7 +8,7 @@ import retrofit2.http.POST
 import java.lang.Exception
 
 
-class UserAlreadyRegistered(message: String) : Exception(message)
+
 
 interface AuthApi {
 
@@ -16,6 +16,8 @@ interface AuthApi {
     fun register(@Body user:UserNetworkEntity): Call<Response<TokenNetworkEntity>>  // refresh token
 
     @POST("auth/session")
-    fun session(@Body refresh_token:TokenNetworkEntity): Call<Response<TokenNetworkEntity>>  // access_token
+    fun session(@Body refresh_token:RefreshTokenNetworkEntity): Call<Response<TokenNetworkEntity>>  // access_token
 
 }
+
+class UserAlreadyRegistered(message: String) : Exception(message)

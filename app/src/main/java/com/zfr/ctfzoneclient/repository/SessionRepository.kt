@@ -8,6 +8,7 @@ import com.zfr.ctfzoneclient.database.CTFZoneDatabase
 import com.zfr.ctfzoneclient.database.data.asDomainModel
 import com.zfr.ctfzoneclient.database.getDatabase
 import com.zfr.ctfzoneclient.network.ControllerApi
+import com.zfr.ctfzoneclient.network.data.RefreshTokenNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 import com.zfr.ctfzoneclient.network.data.asDatabaseEntity
@@ -44,7 +45,7 @@ class SessionRepository(private val database: CTFZoneDatabase, private val logge
      */
     suspend fun getSession(token: TokenNetworkEntity): TokenNetworkEntity? {
         val authApi = ControllerApi().getAuthApi()
-        authApi.session(token).execute().let {
+        authApi.session(RefreshTokenNetworkEntity(refresh_token = token.token)).execute().let {
             if (it.isSuccessful) {
                 val sessionToken = it.body()?.data
 
