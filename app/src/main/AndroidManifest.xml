@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zfr.ctfzoneclient">
+    package="ctfz.trustarea.client">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -10,26 +10,25 @@
         android:label="${applicationName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/AppTheme">
-
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        
+        <service
+            android:name=".service.view.EchoService"
+            android:exported="true" />
         <service
             android:name=".service.view.TaskService"
             android:exported="true" />
-
         <service
             android:name=".service.view.SolutionService"
             android:exported="true" />
-
         <service
             android:name=".service.view.LogService"
             android:exported="true" />
-
         <service
             android:name=".service.view.AuthService"
             android:enabled="true"
             android:exported="true" />
-
         <service
             android:name=".service.view.UserService"
             android:enabled="true"

@@ -1,6 +1,6 @@
 {
   "applicationName": "CTFZone Client: Team 1",
-  "applicationId": "com.zfr.ctfzoneclient.team1",
+  "applicationId": "ctfz.trustarea.client.team1",
   "backend": {
     "host": "192.168.1.65",
     "port": "8080",
