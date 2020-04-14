@@ -22,12 +22,21 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [
-                applicationName:config.applicationName
+                applicationName: config.applicationName
         ]
         buildConfigField "String", "API_URL", "\"http://${config.backend.host}:${config.backend.port}/${config.backend.endpoint}\""
     }
+    signingConfigs {
+        release {
+            storeFile file(config.signingConfig.storeFile)
+            storePassword config.signingConfig.storePassword
+            keyAlias config.signingConfig.keyAlias
+            keyPassword config.signingConfig.keyPassword
+        }
+    }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
         }
     }
