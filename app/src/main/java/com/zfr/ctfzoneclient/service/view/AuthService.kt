@@ -12,6 +12,9 @@ import com.zfr.ctfzoneclient.network.ControllerApi
 import com.zfr.ctfzoneclient.network.data.UserNetworkEntity
 
 import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendError
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendException
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendSuccess
 import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.network.data.ErrorNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
@@ -47,24 +50,6 @@ class AuthService : IntentService("AuthService") {
     private lateinit var userRepository: UsersRepository
     private lateinit var sessionRepository: SessionRepository
 
-    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-        pendingIntent?.send(applicationContext, 0, intent)
-    }
-
-    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
-        val error = errorBody?.asErrorNetworkEntity()
-        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
-    }
-
-    fun sendException(pendingIntent: PendingIntent?, message: String) {
-        logger.info(TAG, "Request failure: ${message}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -84,17 +69,17 @@ class AuthService : IntentService("AuthService") {
         when (intent?.action) {
             ACTION_AUTH_REGISTRATION -> {
                 val user = intent.asUserNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
+                val actionCallback = intent.callback()
 
                 logger.info(TAG, "Registration ${user}")
-                handleActionAuthRegistration(user, pendingIntent)
+                handleActionAuthRegistration(user, actionCallback!!)
             }
             ACTION_AUTH_SESSION -> {
                 val token = intent.asTokenNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
+                val actionCallback = intent.callback()
 
                 logger.info(TAG, "Authorization ${token}")
-                handleActionGetSession(token, pendingIntent)
+                handleActionGetSession(token, actionCallback!!)
             }
         }
     }
@@ -103,7 +88,7 @@ class AuthService : IntentService("AuthService") {
      * Handle action Registration in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionAuthRegistration(user: UserNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionAuthRegistration(user: UserNetworkEntity, actionCallback: String) {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -116,13 +101,14 @@ class AuthService : IntentService("AuthService") {
                 sessionRepository.cacheToken(refreshToken, user)
                 // sessionRepository.cacheToken(sessionToken, user)
 
-                sendSuccess(pendingIntent, refreshToken?.asIntent(Intent()))
+                // Log.d(TAG, "${refreshToken} and ${refToken.getStringExtra("TOKEN")} blyad")
+                sendSuccess(logger, TAG, applicationContext, refreshToken?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
 
         }
@@ -133,7 +119,7 @@ class AuthService : IntentService("AuthService") {
      * Handle action Session in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionGetSession(token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionGetSession(token: TokenNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val sessionToken = sessionRepository.getSession(token)
@@ -141,13 +127,13 @@ class AuthService : IntentService("AuthService") {
                 // for update cache info
                 val user = userRepository.userInfo(sessionToken!!)
 
-                sendSuccess(pendingIntent, sessionToken?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, sessionToken?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
 
         }

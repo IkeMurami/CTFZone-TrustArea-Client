@@ -6,6 +6,9 @@ import android.app.Service
 import android.content.Intent
 import android.content.Context
 import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendError
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendException
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendSuccess
 import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.network.data.TaskNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
@@ -36,24 +39,6 @@ class TaskService : IntentService("TaskService") {
     private lateinit var logger: LogRepository
     private lateinit var taskRepository: TaskRepository
 
-    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-        pendingIntent?.send(applicationContext, 0, intent)
-    }
-
-    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
-        val error = errorBody?.asErrorNetworkEntity()
-        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
-    }
-
-    fun sendException(pendingIntent: PendingIntent?, message: String) {
-        logger.info(TAG, "Request failure: ${message}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -69,107 +54,106 @@ class TaskService : IntentService("TaskService") {
         logger = getLogger(applicationContext)
         logger.info(TAG, intent?.action!!)
 
+
+        val actionCallback = intent.callback()
+
         when (intent?.action) {
             ACTION_CREATE -> {
                 val token = intent.asTokenNetworkEntity()
                 val task = intent.asTaskNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Create new task ${task} by token ${token}")
-                handleActionCreateTask(token, task, pendingIntent)
+                handleActionCreateTask(token, task, actionCallback!!)
             }
             ACTION_GET -> {
                 val token = intent.asTokenNetworkEntity()
                 val task = intent.asTaskNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Get task ${task} by token ${token}")
-                handleActionGetTask(task, token, pendingIntent)
+                handleActionGetTask(task, token, actionCallback!!)
             }
             ACTION_ALL -> {
                 // handleActionFoo(param1, param2)
                 val token = intent.asTokenNetworkEntity()
                 val user = intent.asUserNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Get all tasks by token ${token} ${user}")
-                handleActionGetAllTask(token, user, pendingIntent)
+                handleActionGetAllTask(token, user, actionCallback!!)
 
             }
             ACTION_UPDATE -> {
                 val token = intent.asTokenNetworkEntity()
                 val task = intent.asTaskNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Update task ${task} by token ${token}")
-                handleActionUpdateTask(token, task, pendingIntent)
+                handleActionUpdateTask(token, task, actionCallback!!)
             }
         }
     }
 
-    private fun handleActionCreateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionCreateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, actionCallback: String) {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val createdTask = taskRepository.createTask(sessionToken, task)
 
-                sendSuccess(pendingIntent, createdTask?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, createdTask?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
 
         }
 
     }
 
-    private fun handleActionUpdateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionUpdateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val updatedTask = taskRepository.updateTask(sessionToken, task)
 
-                sendSuccess(pendingIntent, updatedTask?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, updatedTask?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }
 
-    private fun handleActionGetAllTask(sessionToken: TokenNetworkEntity, user: UserNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionGetAllTask(sessionToken: TokenNetworkEntity, user: UserNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val allTasks = taskRepository.getAllTasks(sessionToken, user)
 
-                sendSuccess(pendingIntent, allTasks.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, allTasks.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }
 
-    private fun handleActionGetTask(task: TaskNetworkEntity, token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionGetTask(task: TaskNetworkEntity, token: TokenNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val fetchedTask = taskRepository.getTask(token, task)
 
-                sendSuccess(pendingIntent, fetchedTask?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, fetchedTask?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }

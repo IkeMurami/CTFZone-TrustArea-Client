@@ -15,6 +15,9 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.await
 import com.zfr.ctfzoneclient.PACKAGE_ID
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendError
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendException
+import com.zfr.ctfzoneclient.core.Responder.Companion.sendSuccess
 import com.zfr.ctfzoneclient.core.ResponseErrorException
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
 import com.zfr.ctfzoneclient.network.data.asErrorNetworkEntity
@@ -33,11 +36,7 @@ private const val ACTION_GET_USER = "${PACKAGE_ID}.action.GET_USER"
 private const val ACTION_GET_USERS = "${PACKAGE_ID}.action.GET_USERS"
 private const val ACTION_GET_PROFILE = "${PACKAGE_ID}.action.GET_PROFILE"
 
-/**
- * An [IntentService] subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * helper methods.
- */
+
 class UserService : IntentService("UserService") {
 
     private val TAG = "UserService"
@@ -45,24 +44,6 @@ class UserService : IntentService("UserService") {
     private lateinit var logger: LogRepository
     private lateinit var userRepository: UsersRepository
 
-    fun sendSuccess(pendingIntent: PendingIntent?, intent: Intent?) {
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-        pendingIntent?.send(applicationContext, 0, intent)
-    }
-
-    fun sendError(pendingIntent: PendingIntent?, errorBody: ResponseBody?) {
-        val error = errorBody?.asErrorNetworkEntity()
-        logger.info(TAG, "Return message: ${error?.message}; errors: ${error?.errors}")
-        logger.info(TAG, "Send response to ${pendingIntent?.creatorPackage}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent(error?.message!!, error.errors))
-    }
-
-    fun sendException(pendingIntent: PendingIntent?, message: String) {
-        logger.info(TAG, "Request failure: ${message}")
-
-        pendingIntent?.send(applicationContext, 0, errorIntent("Request failure", listOf(message)))
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -79,75 +60,74 @@ class UserService : IntentService("UserService") {
         logger = getLogger(applicationContext)
         logger.info(TAG, intent?.action!!)
 
+        val actionCallback = intent.callback()
+
         when (intent?.action) {
             ACTION_GET_USER -> {
                 val user = intent.asUserNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Get user info by username ${user.username}")
 
-                handleActionUser(user.username, pendingIntent)
+                handleActionUser(user.username, actionCallback!!)
             }
             ACTION_GET_USERS -> {
-                val pendingIntent = intent.getPendingIntent()
                 logger.info(TAG, "Get all users info")
 
-                handleActionListUser(pendingIntent)
+                handleActionListUser(actionCallback!!)
             }
             ACTION_GET_PROFILE -> {
                 val token = intent.asTokenNetworkEntity()
-                val pendingIntent = intent.getPendingIntent()
 
                 logger.info(TAG, "Get profile by token ${token.token}")
-                handleActionProfile(token, pendingIntent)
+                handleActionProfile(token, actionCallback!!)
             }
         }
     }
 
-    private fun handleActionUser(username: String?, pendingIntent: PendingIntent?) {
+    private fun handleActionUser(username: String?, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userRepository.userInfo(username!!)
 
-                sendSuccess(pendingIntent, user?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }
 
-    private fun handleActionListUser(pendingIntent: PendingIntent?) {
+    private fun handleActionListUser(actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val users = userRepository.usersList()
 
-                sendSuccess(pendingIntent, users?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, users?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }
 
-    private fun handleActionProfile(token: TokenNetworkEntity, pendingIntent: PendingIntent?) {
+    private fun handleActionProfile(token: TokenNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userRepository.updateProfile(token)
 
-                sendSuccess(pendingIntent, user?.asIntent(Intent()))
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
-                sendError(pendingIntent, e.error)
+                sendError(logger, TAG, applicationContext, e.error, actionCallback)
             }
             catch (e: Exception) {
-                sendException(pendingIntent, e.localizedMessage!!)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
             }
         }
     }

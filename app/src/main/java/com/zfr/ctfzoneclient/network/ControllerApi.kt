@@ -25,7 +25,7 @@ class ControllerApi {
         .readTimeout(10, TimeUnit.SECONDS)
         .writeTimeout(10, TimeUnit.SECONDS)
         .connectTimeout(10, TimeUnit.SECONDS)
-        .addInterceptor(loggingInterceptor)
+        //.addInterceptor(loggingInterceptor)
 
     fun retrofit(): Retrofit {
         val retrofit = Retrofit.Builder()

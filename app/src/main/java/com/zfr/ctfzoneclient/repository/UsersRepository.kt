@@ -34,7 +34,7 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
 
         val userResp = ControllerApi().getUserApi().user(username).execute()
         if (userResp.isSuccessful) {
-            val user = userResp.body()?.data
+            val user = userResp.body()?.data?.asUserNetworkEntity()
             database.userDao.insertUser(user?.asDatabaseEntity()!!)
             logger.info(TAG, "Updated info: ${user}")
 
@@ -54,7 +54,8 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
         val meResp = ControllerApi().getUserApi().profile(token.token).execute()
 
         if (meResp.isSuccessful) {
-            val user = meResp.body()?.data
+            val test = meResp.body()?.data
+            val user = meResp.body()?.data?.asUserNetworkEntity()
 
             logger.info(TAG, "Updated info: ${user}")
 
@@ -107,11 +108,11 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
         logger.info(TAG, "Get list users")
         val usersResp = ControllerApi().getUserApi().users().execute()
         if (usersResp.isSuccessful) {
-            val users = usersResp.body()?.data
+            val users = usersResp.body()?.data?.asUserNetworkEntity()
 
             logger.info(TAG, "Fetch ${users?.size} users")
 
-            return users!!
+            return users ?: return emptyList()
         }
         else {
             throw ResponseErrorException("Invalid token", usersResp.errorBody()!!)

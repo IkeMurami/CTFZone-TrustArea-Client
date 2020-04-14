@@ -22,3 +22,13 @@ fun UserNetworkEntity.asDatabaseEntity(): UserDBEntity {
     )
 }
 
+
+fun UserNetworkEntityResponse.asUserNetworkEntity(): UserNetworkEntity {
+    return UserNetworkEntity(username = Username, user_id = ID, first_name = FirstName, last_name = LastName)
+}
+
+fun List<UserNetworkEntityResponse>.asUserNetworkEntity(): List<UserNetworkEntity> {
+    return map {
+        it.asUserNetworkEntity()
+    }
+}

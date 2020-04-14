@@ -6,12 +6,7 @@ import androidx.room.PrimaryKey
 import com.zfr.ctfzoneclient.network.data.TaskNetworkEntity
 
 
-@Entity(foreignKeys = [
-    ForeignKey(
-        entity = UserDBEntity::class,
-        parentColumns = ["user_id"],
-        childColumns = ["owner_id"])
-])
+@Entity
 data class TaskDBEntity constructor(
 
     val owner_id: String,

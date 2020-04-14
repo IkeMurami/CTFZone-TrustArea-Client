@@ -52,6 +52,17 @@ data class UserNetworkEntity (
 ) : ResponseData()
 
 
+data class UserNetworkEntityResponse (
+
+    @SerializedName("Username") val Username: String? = null,
+    @SerializedName("FirstName") val FirstName: String? = null,
+    @SerializedName("LastName") val LastName: String? = null,
+    @SerializedName("ID") val ID: String? = null,
+    @SerializedName("Date") val Date: String? = null
+
+) : ResponseData()
+
+
 data class TaskNetworkEntity (
 
     @SerializedName("task_id") val task_id: Int?,

@@ -10,15 +10,7 @@ import com.zfr.ctfzoneclient.network.data.TokenType
  * TokenDBEntity represents a session entity in the database
  * only for local user logic !!!
  */
-@Entity(
-    foreignKeys = [
-        ForeignKey(
-            entity = UserDBEntity::class,
-            parentColumns = ["user_id"],
-            childColumns = ["username"]
-        )
-    ]
-)
+@Entity
 data class TokenDBEntity constructor(
     val token_type: String,
     @PrimaryKey

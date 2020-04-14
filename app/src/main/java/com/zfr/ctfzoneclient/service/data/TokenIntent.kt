@@ -1,6 +1,7 @@
 package com.zfr.ctfzoneclient.service.data
 
 import android.content.Intent
+import android.util.Log
 import com.zfr.ctfzoneclient.network.data.TokenNetworkEntity
 import com.zfr.ctfzoneclient.network.data.TokenType
 
