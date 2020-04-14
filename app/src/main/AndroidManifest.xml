@@ -30,15 +30,6 @@
             android:enabled="true"
             android:exported="true" />
 
-        <receiver
-            android:name=".receivers.receivers.UserBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.zfr.ctfzoneclient.MANAGE_USER" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name=".service.view.UserService"
             android:enabled="true"

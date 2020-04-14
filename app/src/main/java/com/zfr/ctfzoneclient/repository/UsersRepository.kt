@@ -50,11 +50,9 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
      */
     suspend fun updateProfile(token: TokenNetworkEntity): UserNetworkEntity? {
         logger.info(TAG, "Update info for user with token ${token.token}")
-
         val meResp = ControllerApi().getUserApi().profile(token.token).execute()
 
         if (meResp.isSuccessful) {
-            val test = meResp.body()?.data
             val user = meResp.body()?.data?.asUserNetworkEntity()
 
             logger.info(TAG, "Updated info: ${user}")
@@ -67,14 +65,15 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
         else {
             throw ResponseErrorException("Invalid token", meResp.errorBody()!!)
         }
-    }
 
+    }
     /*
      * [Username] -> [User]
      */
-    suspend fun userInfo(username: String): UserNetworkEntity? {
-        // get local
+    suspend fun userInfo(username: String?): UserNetworkEntity? {
         logger.info(TAG, "Get user info by username ${username}")
+
+        username ?: return null
 
         val user = database.userDao.getUser(username)
 
@@ -93,15 +92,15 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
      */
     suspend fun userInfo(token: TokenNetworkEntity): UserNetworkEntity? {
         logger.info(TAG, "Get user info by token: ${token}")
-        val user = updateProfile(token)
+        val username = database.tokenDao.userByToken(token.token)?.username
+        val user = userInfo(username) ?: run {
+            return updateProfile(token)?: run {
+                logger.info(TAG, "User not found by token ${token}")
+                throw InvalidTokenException("Invalid token")
+            }
+        }
 
-        if (user == null) {
-            logger.info(TAG, "User not found by token ${token}")
-            throw InvalidTokenException("Invalid token")
-        }
-        else {
-            return user
-        }
+        return user
     }
 
     suspend fun usersList(): List<UserNetworkEntity> {

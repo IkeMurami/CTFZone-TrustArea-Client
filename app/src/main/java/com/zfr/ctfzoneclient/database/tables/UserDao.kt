@@ -8,8 +8,8 @@ import com.zfr.ctfzoneclient.database.data.UserDBEntity
 @Dao
 interface UserDao  {
 
-    @Query("SELECT * FROM ${UserDBEntity.TABLE_NAME} WHERE user_id LIKE :user_id")
-    fun getUser(user_id: String): UserDBEntity?
+    @Query("SELECT * FROM ${UserDBEntity.TABLE_NAME} WHERE user_name LIKE :user_name LIMIT 1")
+    fun getUser(user_name: String): UserDBEntity?
 
     @Query("SELECT * FROM ${UserDBEntity.TABLE_NAME}")
     fun getUsers(): List<UserDBEntity>
