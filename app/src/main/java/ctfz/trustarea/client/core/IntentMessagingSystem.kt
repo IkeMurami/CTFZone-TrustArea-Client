@@ -6,6 +6,11 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 
+/*
+* Intent Messaging System
+*  by ramon93i7
+* */
+
 class IMS(private val context: Context) {
     companion object {
         private const val RETURN_WITH_ACTION_NAME = "__return_with_action__"
