@@ -17,9 +17,25 @@ fun TaskNetworkEntity.asDatabaseEntity(user: UserNetworkEntity): TaskDBEntity {
 }
 
 
+fun TaskNetworkEntityResponse.asTaskNetworkEntity(): TaskNetworkEntity {
+    return TaskNetworkEntity(
+        task_id = ID,
+        reward = Reward,
+        challenge = Challenge,
+        description = Description
+    )
+}
+
+
 fun List<TaskNetworkEntity>.asDatabaseEntity(user: UserNetworkEntity): List<TaskDBEntity> {
     return map {
         it.asDatabaseEntity(user)
+    }
+}
+
+fun List<TaskNetworkEntityResponse>.asTaskNetworkEntity(): List<TaskNetworkEntity> {
+    return map {
+        it.asTaskNetworkEntity()
     }
 }
 

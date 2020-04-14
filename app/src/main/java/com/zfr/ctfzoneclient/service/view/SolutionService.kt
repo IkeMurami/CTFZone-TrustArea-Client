@@ -63,6 +63,7 @@ class SolutionService : IntentService("SolutionService") {
      */
     private fun handleActionSolutionSend(token: TokenNetworkEntity, solution: SolutionNetworkEntity, actionCallback: String) {
         CoroutineScope(Dispatchers.IO).launch {
+
             try {
                 ControllerApi().getSolutionApi().solve(token.token, solution).execute().let {
                     if (it.isSuccessful) {

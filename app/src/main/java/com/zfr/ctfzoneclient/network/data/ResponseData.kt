@@ -73,9 +73,22 @@ data class TaskNetworkEntity (
 ) : ResponseData()
 
 
+data class TaskNetworkEntityResponse (
+
+    @SerializedName("ID") val ID: Int?,
+    @SerializedName("Description") val Description: String,
+    @SerializedName("Challenge") val Challenge: String,
+    @SerializedName("Reward") val Reward: String,
+    @SerializedName("Owner") val Owner: String,
+    @SerializedName("Solved") val Solved: Boolean,
+    @SerializedName("Date") val Date: String
+
+) : ResponseData()
+
+
 data class SolutionNetworkEntity(
 
-    @SerializedName("task_id") val taskId: Int,
+    @SerializedName("task_id") val task_id: Int,
     @SerializedName("solution") val solution: String
 
 ) : ResponseData()

@@ -42,17 +42,11 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
         val api = ControllerApi().getTaskApi()
         api.update(token.token, task.task_id!!, task).execute().let {
             if (it.isSuccessful) {
-                var updatedTask = it.body()?.data
-                updatedTask = TaskNetworkEntity(
-                    task_id = updatedTask?.task_id,
-                    reward = task.reward,
-                    challenge = task.challenge,
-                    description = task.description
-                )
-                logger.info(TAG, "Task updated ${updatedTask}")
 
-                cacheTask(updatedTask!!, token)
-                return updatedTask
+                logger.info(TAG, "Task updated ${task}")
+
+                cacheTask(task, token)
+                return task
             }
             else {
                 throw ResponseErrorException("Something wrong", it.errorBody()!!)
@@ -68,7 +62,8 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
             val api = ControllerApi().getTaskApi()
             api.task(token.token, task.task_id).execute().let {
                 if (it.isSuccessful) {
-                    val taskFromBackend = it.body()?.data
+                    val taskFromBackend = it.body()?.data?.asTaskNetworkEntity()
+
                     logger.info(TAG, "Find task ${taskFromBackend} for user with token ${token}")
 
                     cacheTask(taskFromBackend!!, token)
@@ -89,7 +84,7 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
 
         ControllerApi().getTaskApi().tasks(token.token, user?.username).execute().let{
             if (it.isSuccessful) {
-                val tasks = it.body()?.data
+                val tasks = it.body()?.data?.asTaskNetworkEntity()
                 logger.info(TAG, "Fetch ${tasks?.size} tasks ${user?.username} ${token.token}")
 
                 return tasks!!
