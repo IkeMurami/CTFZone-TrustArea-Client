@@ -20,9 +20,16 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
         val api = ControllerApi().getTaskApi()
         api.create(token.token, task).execute().let {
             if (it.isSuccessful) {
-                val createdTask = it.body()?.data
+                var createdTask = it.body()?.data
+                createdTask = TaskNetworkEntity(
+                    task_id = createdTask?.task_id,
+                    reward = task.reward,
+                    challenge = task.challenge,
+                    description = task.description
+                )
                 logger.info(TAG, "Create new task ${createdTask} for user with token ${token}")
-                cacheTask(createdTask!!, token)
+
+                cacheTask(createdTask, token)
                 return createdTask
             }
             else {
@@ -35,7 +42,13 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
         val api = ControllerApi().getTaskApi()
         api.update(token.token, task.task_id!!, task).execute().let {
             if (it.isSuccessful) {
-                val updatedTask = it.body()?.data
+                var updatedTask = it.body()?.data
+                updatedTask = TaskNetworkEntity(
+                    task_id = updatedTask?.task_id,
+                    reward = task.reward,
+                    challenge = task.challenge,
+                    description = task.description
+                )
                 logger.info(TAG, "Task updated ${updatedTask}")
 
                 cacheTask(updatedTask!!, token)

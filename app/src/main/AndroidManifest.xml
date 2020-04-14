@@ -10,16 +10,17 @@
         android:label="${applicationName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
         <service
             android:name=".service.view.TaskService"
-            android:exported="false"></service>
+            android:exported="true"></service>
         <service
             android:name=".service.view.SolutionService"
-            android:exported="false" />
+            android:exported="true" />
         <service
             android:name=".service.view.LogService"
-            android:exported="false" />
+            android:exported="true" />
 
         <service
             android:name=".service.view.AuthService"
