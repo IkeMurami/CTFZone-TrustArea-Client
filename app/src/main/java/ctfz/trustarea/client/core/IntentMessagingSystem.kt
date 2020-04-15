@@ -1,6 +1,7 @@
 package ctfz.trustarea.client.core
 
 import android.content.*
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -33,12 +34,12 @@ class IMS(private val context: Context) {
     }
 
     suspend fun send(msg: Intent): Intent? =
-        suspendCoroutine {cont ->
+        suspendCancellableCoroutine {cont ->
             send(msg) { cont.resume(it) }
         }
 
     suspend fun sendTo(pkg: String, serviceClass: String, actionName: String, msg: Intent): Intent? =
-        suspendCoroutine { cont ->
+        suspendCancellableCoroutine { cont ->
             sendTo(pkg, serviceClass, actionName, msg) { cont.resume(it) }
         }
 
