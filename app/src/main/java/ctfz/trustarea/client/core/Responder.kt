@@ -14,28 +14,33 @@ class Responder {
 
     companion object {
 
-        val EXTRA_CALLBACK = "RECEIVER_CALLBACK"
+        val EXTRA_CALLBACK = "__return_with_action__"
 
-        fun sendSuccess(logger: LogRepository, TAG: String, context: Context, intent: Intent?, callback: String) {
+        fun sendSuccess(logger: LogRepository, TAG: String, context: Context, response: Intent, request: Intent) {
 
-            logger.info(TAG, "Success: Send response to ${callback}")
-            context.sendBroadcast(intent?.apply { action = callback })
+            val ims = IMS(context)
+
+            logger.info(TAG, "Success: Send response to ${ims.extractReturnAction(request)}")
+            ims.replyTo(request, response)
+            // context.sendBroadcast(intent?.apply { action = callback })
 
         }
 
-        fun sendError(logger: LogRepository, TAG: String, context: Context, errorBody: ResponseBody?, callback: String) {
+        fun sendError(logger: LogRepository, TAG: String, context: Context, errorBody: ResponseBody?, request: Intent) {
+            val ims = IMS(context)
             val error = errorBody?.asErrorNetworkEntity()
             logger.info(TAG, "Error: Return message: ${error?.message}; errors: ${error?.errors}")
-            logger.info(TAG, "Error: Send response to ${callback}")
+            logger.info(TAG, "Error: Send response to ${ims.extractReturnAction(request)}")
 
-            context.sendBroadcast(errorIntent(error?.message!!, error.errors).apply { action = callback })
+            ims.replyTo(errorIntent(error?.message!!, error.errors), request)
+            // context.sendBroadcast(errorIntent(error?.message!!, error.errors).apply { action = callback })
 
         }
 
-        fun sendException(logger: LogRepository, TAG: String, context: Context, message: String, callback: String) {
-            logger.info(TAG, "Exception: Send response to ${callback} with message ${message}")
-
-            context.sendBroadcast(errorIntent("Request failure", listOf(message)).apply { action = callback })
+        fun sendException(logger: LogRepository, TAG: String, context: Context, message: String, request: Intent) {
+            val ims = IMS(context)
+            logger.info(TAG, "Exception: Send response to ${ims.extractReturnAction(request)} with message ${message}")
+            ims.replyTo(errorIntent("Request failure", listOf(message)), request)
         }
     }
 }

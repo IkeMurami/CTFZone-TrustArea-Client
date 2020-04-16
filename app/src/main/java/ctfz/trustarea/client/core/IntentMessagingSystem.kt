@@ -46,17 +46,20 @@ class IMS(private val context: Context) {
 
     fun replyTo(msg: Intent, answer: Intent): Boolean {
         val returnAction = extractReturnAction(msg)
+
         if (returnAction == null)
             return false
+
         context.sendBroadcast(answer.apply {
             action = returnAction
+            component = null
         })
         return true
     }
 
     fun isMsg(msg: Intent?): Boolean = msg != null && extractReturnAction(msg) != null
 
-    private fun extractReturnAction(msg: Intent): String? = msg.getStringExtra(RETURN_WITH_ACTION_NAME)
+    fun extractReturnAction(msg: Intent): String? = msg.getStringExtra(RETURN_WITH_ACTION_NAME)
 
     private fun registerHandlerForAction(action: String, handler: (Intent?) -> Unit) {
         val filter = IntentFilter().apply {

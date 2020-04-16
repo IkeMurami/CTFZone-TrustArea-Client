@@ -7,6 +7,7 @@ import android.content.Context
 import ctfz.trustarea.client.network.data.UserNetworkEntity
 
 import ctfz.trustarea.client.PACKAGE_ID
+import ctfz.trustarea.client.core.IMS
 import ctfz.trustarea.client.core.Responder.Companion.sendError
 import ctfz.trustarea.client.core.Responder.Companion.sendException
 import ctfz.trustarea.client.core.Responder.Companion.sendSuccess
@@ -38,6 +39,7 @@ class AuthService : IntentService("AuthService") {
     private lateinit var logger: LogRepository
     private lateinit var userRepository: UsersRepository
     private lateinit var sessionRepository: SessionRepository
+    private lateinit var ims: IMS
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,6 +47,7 @@ class AuthService : IntentService("AuthService") {
         logger = getLogger(applicationContext)
         userRepository = getUserRepository(applicationContext)
         sessionRepository = getSessionRepo(applicationContext)
+        ims = IMS(applicationContext)
 
         logger.info(TAG, "Started")
 
@@ -90,7 +93,7 @@ class AuthService : IntentService("AuthService") {
                 sessionRepository.cacheToken(refreshToken, user)
                 // sessionRepository.cacheToken(sessionToken, user)
 
-                // Log.d(TAG, "${refreshToken} and ${refToken.getStringExtra("TOKEN")} blyad")
+
                 sendSuccess(logger, TAG, applicationContext, refreshToken?.asIntent(Intent()), actionCallback)
             }
             catch (e: ResponseErrorException) {
