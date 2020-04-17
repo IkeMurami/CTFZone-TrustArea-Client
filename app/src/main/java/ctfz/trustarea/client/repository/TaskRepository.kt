@@ -54,7 +54,7 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
 
     suspend fun getTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
         val user = usersRepository.userInfo(token)
-        val fetchTask = database.taskDao.task(user?.user_id!!, task.task_id!!)
+        val fetchTask = database.taskDao.task(user?.username!!, task.task_id!!)
 
         if (fetchTask == null) {
             val api = ControllerApi().getTaskApi()

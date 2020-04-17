@@ -14,7 +14,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class IMS(private val context: Context) {
     companion object {
-        private const val RETURN_WITH_ACTION_NAME = "__return_with_action__"
+        const val RETURN_WITH_ACTION_NAME = "__return_with_action__"
     }
 
     fun send(msg: Intent, callback: (Intent?) -> Unit) {

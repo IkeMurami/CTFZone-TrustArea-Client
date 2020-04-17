@@ -61,17 +61,15 @@ class AuthService : IntentService("AuthService") {
         when (intent?.action) {
             ACTION_AUTH_REGISTRATION -> {
                 val user = intent.asUserNetworkEntity()
-                val actionCallback = intent.callback()
 
                 logger.info(TAG, "Registration ${user}")
-                handleActionAuthRegistration(user, actionCallback!!)
+                handleActionAuthRegistration(user, intent)
             }
             ACTION_AUTH_SESSION -> {
                 val token = intent.asTokenNetworkEntity()
-                val actionCallback = intent.callback()
 
                 logger.info(TAG, "Authorization ${token}")
-                handleActionGetSession(token, actionCallback!!)
+                handleActionGetSession(token, intent)
             }
         }
     }
@@ -80,7 +78,7 @@ class AuthService : IntentService("AuthService") {
      * Handle action Registration in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionAuthRegistration(user: UserNetworkEntity, actionCallback: String) {
+    private fun handleActionAuthRegistration(user: UserNetworkEntity, request: Intent) {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -94,13 +92,13 @@ class AuthService : IntentService("AuthService") {
                 // sessionRepository.cacheToken(sessionToken, user)
 
 
-                sendSuccess(logger, TAG, applicationContext, refreshToken?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, refreshToken?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
 
         }
@@ -111,7 +109,7 @@ class AuthService : IntentService("AuthService") {
      * Handle action Session in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionGetSession(token: TokenNetworkEntity, actionCallback: String) {
+    private fun handleActionGetSession(token: TokenNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val sessionToken = sessionRepository.getSession(token)
@@ -119,13 +117,13 @@ class AuthService : IntentService("AuthService") {
                 // for update cache info
                 val user = userRepository.userInfo(sessionToken!!)
 
-                sendSuccess(logger, TAG, applicationContext, sessionToken?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, sessionToken?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
 
         }
@@ -135,32 +133,6 @@ class AuthService : IntentService("AuthService") {
     override fun onDestroy() {
         logger.info(TAG, "Destroy")
         super.onDestroy()
-    }
-
-    companion object {
-
-
-        @JvmStatic
-        fun startActionAuthRegistration(context: Context, user: UserNetworkEntity) {
-            val intent = Intent(context, AuthService::class.java).apply {
-                action = ACTION_AUTH_REGISTRATION
-            }.let {
-                    intent -> user.asIntent(intent)
-            }
-
-            context.startService(intent)
-        }
-
-        @JvmStatic
-        fun startActionGetSession(context: Context, refresh_token: TokenNetworkEntity) {
-            val intent = Intent(context, AuthService::class.java).apply {
-                action = ACTION_AUTH_SESSION
-            }.let {
-                intent -> refresh_token.asIntent(intent)
-            }
-
-            context.startService(intent)
-        }
     }
 }
 

@@ -44,9 +44,8 @@ class SolutionService : IntentService("SolutionService") {
             ACTION_SOLUTION_SEND -> {
                 val token = intent.asTokenNetworkEntity()
                 val solution = intent.asSolutionNetworkEntity()
-                val actionCallback = intent.callback()
 
-                handleActionSolutionSend(token, solution, actionCallback!!)
+                handleActionSolutionSend(token, solution, intent)
             }
         }
     }
@@ -55,7 +54,7 @@ class SolutionService : IntentService("SolutionService") {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private fun handleActionSolutionSend(token: TokenNetworkEntity, solution: SolutionNetworkEntity, actionCallback: String) {
+    private fun handleActionSolutionSend(token: TokenNetworkEntity, solution: SolutionNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
 
             try {
@@ -64,7 +63,7 @@ class SolutionService : IntentService("SolutionService") {
                         val task = it.body()?.data
                         logger.info(TAG, "Challenge ${task?.challenge} solve correct by user with token ${token} - ${solution}")
 
-                        sendSuccess(logger, TAG, applicationContext, task?.asIntent(Intent()), actionCallback)
+                        sendSuccess(logger, TAG, applicationContext, task?.asIntent(Intent())!!, request)
                     }
                     else {
                         throw ResponseErrorException("Wrong solution", it.errorBody()!!)
@@ -72,10 +71,10 @@ class SolutionService : IntentService("SolutionService") {
                 }
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }

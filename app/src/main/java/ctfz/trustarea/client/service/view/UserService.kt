@@ -55,66 +55,66 @@ class UserService : IntentService("UserService") {
 
                 logger.info(TAG, "Get user info by username ${user.username}")
 
-                handleActionUser(user.username, actionCallback!!)
+                handleActionUser(user.username, intent)
             }
             ACTION_GET_USERS -> {
                 logger.info(TAG, "Get all users info")
 
-                handleActionListUser(actionCallback!!)
+                handleActionListUser(intent)
             }
             ACTION_GET_PROFILE -> {
                 val token = intent.asTokenNetworkEntity()
 
                 logger.info(TAG, "Get profile by token ${token.token}")
-                handleActionProfile(token, actionCallback!!)
+                handleActionProfile(token, intent)
             }
         }
     }
 
-    private fun handleActionUser(username: String?, actionCallback: String) {
+    private fun handleActionUser(username: String?, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userRepository.userInfo(username!!)
 
-                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent())!!, request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }
 
-    private fun handleActionListUser(actionCallback: String) {
+    private fun handleActionListUser(request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val users = userRepository.usersList()
 
-                sendSuccess(logger, TAG, applicationContext, users?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, users?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }
 
-    private fun handleActionProfile(token: TokenNetworkEntity, actionCallback: String) {
+    private fun handleActionProfile(token: TokenNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userRepository.updateProfile(token)
 
-                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent())!!, request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }

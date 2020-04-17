@@ -8,13 +8,11 @@ import ctfz.trustarea.client.service.data.errorIntent
 import okhttp3.ResponseBody
 
 
-
-
 class Responder {
 
     companion object {
 
-        val EXTRA_CALLBACK = "__return_with_action__"
+        const val EXTRA_CALLBACK = IMS.RETURN_WITH_ACTION_NAME
 
         fun sendSuccess(logger: LogRepository, TAG: String, context: Context, response: Intent, request: Intent) {
 

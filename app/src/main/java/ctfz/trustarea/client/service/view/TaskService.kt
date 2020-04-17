@@ -50,23 +50,20 @@ class TaskService : IntentService("TaskService") {
         logger = getLogger(applicationContext)
         logger.info(TAG, intent?.action!!)
 
-
-        val actionCallback = intent.callback()
-
         when (intent?.action) {
             ACTION_CREATE -> {
                 val token = intent.asTokenNetworkEntity()
                 val task = intent.asTaskNetworkEntity()
 
                 logger.info(TAG, "Create new task ${task} by token ${token}")
-                handleActionCreateTask(token, task, actionCallback!!)
+                handleActionCreateTask(token, task, intent)
             }
             ACTION_GET -> {
                 val token = intent.asTokenNetworkEntity()
                 val task = intent.asTaskNetworkEntity()
 
                 logger.info(TAG, "Get task ${task} by token ${token}")
-                handleActionGetTask(task, token, actionCallback!!)
+                handleActionGetTask(task, token, intent)
             }
             ACTION_ALL -> {
                 // handleActionFoo(param1, param2)
@@ -74,7 +71,7 @@ class TaskService : IntentService("TaskService") {
                 val user = intent.asUserNetworkEntity()
 
                 logger.info(TAG, "Get all tasks by token ${token} ${user}")
-                handleActionGetAllTask(token, user, actionCallback!!)
+                handleActionGetAllTask(token, user, intent)
 
             }
             ACTION_UPDATE -> {
@@ -82,74 +79,74 @@ class TaskService : IntentService("TaskService") {
                 val task = intent.asTaskNetworkEntity()
 
                 logger.info(TAG, "Update task ${task} by token ${token}")
-                handleActionUpdateTask(token, task, actionCallback!!)
+                handleActionUpdateTask(token, task, intent)
             }
         }
     }
 
-    private fun handleActionCreateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, actionCallback: String) {
+    private fun handleActionCreateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, request: Intent) {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val createdTask = taskRepository.createTask(sessionToken, task)
 
-                sendSuccess(logger, TAG, applicationContext, createdTask?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, createdTask?.asIntent(Intent())!!, request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
 
         }
 
     }
 
-    private fun handleActionUpdateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, actionCallback: String) {
+    private fun handleActionUpdateTask(sessionToken: TokenNetworkEntity, task: TaskNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val updatedTask = taskRepository.updateTask(sessionToken, task)
 
-                sendSuccess(logger, TAG, applicationContext, updatedTask?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, updatedTask?.asIntent(Intent())!!, request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }
 
-    private fun handleActionGetAllTask(sessionToken: TokenNetworkEntity, user: UserNetworkEntity, actionCallback: String) {
+    private fun handleActionGetAllTask(sessionToken: TokenNetworkEntity, user: UserNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val allTasks = taskRepository.getAllTasks(sessionToken, user)
 
-                sendSuccess(logger, TAG, applicationContext, allTasks.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, allTasks.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }
 
-    private fun handleActionGetTask(task: TaskNetworkEntity, token: TokenNetworkEntity, actionCallback: String) {
+    private fun handleActionGetTask(task: TaskNetworkEntity, token: TokenNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val fetchedTask = taskRepository.getTask(token, task)
 
-                sendSuccess(logger, TAG, applicationContext, fetchedTask?.asIntent(Intent()), actionCallback)
+                sendSuccess(logger, TAG, applicationContext, fetchedTask?.asIntent(Intent())!!, request)
             }
             catch (e: ResponseErrorException) {
-                sendError(logger, TAG, applicationContext, e.error, actionCallback)
+                sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, actionCallback)
+                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
             }
         }
     }
