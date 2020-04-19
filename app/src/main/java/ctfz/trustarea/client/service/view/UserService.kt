@@ -47,8 +47,6 @@ class UserService : IntentService("UserService") {
         logger = getLogger(applicationContext)
         logger.info(TAG, intent?.action!!)
 
-        val actionCallback = intent.callback()
-
         when (intent?.action) {
             ACTION_GET_USER -> {
                 val user = intent.asUserNetworkEntity()

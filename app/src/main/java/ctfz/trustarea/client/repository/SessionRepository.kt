@@ -3,6 +3,7 @@ package ctfz.trustarea.client.repository
 import android.content.Context
 import ctfz.trustarea.client.core.ResponseErrorException
 import ctfz.trustarea.client.database.CTFZoneDatabase
+import ctfz.trustarea.client.database.data.asDomainModel
 import ctfz.trustarea.client.database.getDatabase
 import ctfz.trustarea.client.network.ControllerApi
 import ctfz.trustarea.client.network.data.RefreshTokenNetworkEntity
@@ -76,6 +77,12 @@ class SessionRepository(private val database: CTFZoneDatabase, private val logge
 
 
         return tokenRec?.username
+    }
+
+    suspend fun sessions(user: UserNetworkEntity): List<TokenNetworkEntity> {
+        logger.info(TAG, "Backup sessions for user ${user}")
+        val tokens = database.tokenDao.userSessions(user.username?:return emptyList())
+        return tokens.asDomainModel()
     }
 
 }

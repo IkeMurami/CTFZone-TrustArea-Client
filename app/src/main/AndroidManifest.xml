@@ -12,12 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
+        <service
+            android:name=".service.view.BackupService"
+            android:exported="true" />
         <service
             android:name=".service.view.EchoService"
             android:enabled="true"
             android:exported="true" />
-
         <service
             android:name=".service.view.TaskService"
             android:exported="true" />

@@ -46,6 +46,7 @@ class SolutionService : IntentService("SolutionService") {
                 val solution = intent.asSolutionNetworkEntity()
 
                 handleActionSolutionSend(token, solution, intent)
+                // logger.info(TAG, "Test after party")
             }
         }
     }
@@ -55,6 +56,7 @@ class SolutionService : IntentService("SolutionService") {
      * parameters.
      */
     private fun handleActionSolutionSend(token: TokenNetworkEntity, solution: SolutionNetworkEntity, request: Intent) {
+
         CoroutineScope(Dispatchers.IO).launch {
 
             try {

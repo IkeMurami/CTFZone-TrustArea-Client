@@ -38,12 +38,14 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
 
     suspend fun updateTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
         val api = ControllerApi().getTaskApi()
-        api.update(token.token, task.task_id!!, task).execute().let {
-            if (it.isSuccessful) {
 
+        api.update(token.token, task.task_id!!, task).execute().let {
+
+            if (it.isSuccessful) {
                 logger.info(TAG, "Task updated ${task}")
 
                 cacheTask(task, token)
+
                 return task
             }
             else {
