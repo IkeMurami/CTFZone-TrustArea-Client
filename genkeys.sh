@@ -1,0 +1,1 @@
+keytool -genkeypair -noprompt -keystore applicationTeam.jks -storepass password1 -alias application -keypass password1 -dname "CN=Team1 O=TrustArea C=RU" -validity 10000 -sigalg SHA256withRSA -keyalg RSA -keysize 2048
