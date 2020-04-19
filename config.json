@@ -11,7 +11,7 @@
     "configName": "applicationTeam",
     "storeFile": "applicationTeam.jks",
     "storePassword": "password1",
-    "keyAlias": "application1",
+    "keyAlias": "application",
     "keyPassword": "password1"
   }
 }
