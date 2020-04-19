@@ -1,24 +1,21 @@
 # How to build
 
-Release: `./gradlew build :app:assembleRelease`
+## If Android SDK is already installed (ANDROID_HOME is exported on PATH)
 
-Debug: `./gradlew build :app:assembleDebug`
+Release: `./gradlew build :app:assembleRelease`
 
 Application in `app/build/outputs/apk/release`
 
-# Clean build cache directory
+## Build via docker
 
-`./gradlew cleanBuildCache`
-
-# Clear build
-
-`./gradlew clean`
-
-
-
-# How to run tests
 ```
-Test Registration:
-adb shell am startservice -a <applicationId>.action.TEST_REGISTER -e USER_NAME testuser -e FIRST_NAME firstname_testuser -e LAST_NAME lastname_testuser <applicationId>/com.zfr.ctfzoneclient.service.view.TestService
+docker-compose -f build.yaml build
 ```
 
+Application in `/home/app/build/outputs/apk/release`
+
+**NB**: Building the application for the first time can take about 10 minutes.
+Rebuild (provided that you are connecting to an already deployed container) - less than a minute.
+
+config.json contains information about the address of your backend and the identifier of your application.
+It is strongly recommended that these values not be changed.

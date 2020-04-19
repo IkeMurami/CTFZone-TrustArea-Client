@@ -5,3 +5,4 @@ COPY . .
 RUN ./gradlew build :app:assembleRelease
 
 
+
