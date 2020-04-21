@@ -7,12 +7,13 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 interface UserApi {
 
-    @GET("users/{username}")
-    fun user(@Path("username") username: String): Call<Response<UserNetworkEntityResponse>> // If user not exist - create
+    @GET("users")
+    fun user(@Query("username") username: String?): Call<Response<UserNetworkEntityResponse>> // If user not exist - create
 
     @GET("users")
     fun users(): Call<Response<List<UserNetworkEntityResponse>>>
