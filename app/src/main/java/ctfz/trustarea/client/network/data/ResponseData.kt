@@ -42,8 +42,7 @@ data class UserNetworkEntity (
 
     @SerializedName("username") val username: String? = null,
     @SerializedName("first_name") val first_name: String? = null,
-    @SerializedName("last_name") val last_name: String? = null,
-    @SerializedName("user_id") val user_id: String? = null
+    @SerializedName("last_name") val last_name: String? = null
 
 ) : ResponseData()
 
@@ -53,7 +52,6 @@ data class UserNetworkEntityResponse (
     @SerializedName("Username") val Username: String? = null,
     @SerializedName("FirstName") val FirstName: String? = null,
     @SerializedName("LastName") val LastName: String? = null,
-    @SerializedName("ID") val ID: String? = null,
     @SerializedName("Date") val Date: String? = null
 
 ) : ResponseData()
