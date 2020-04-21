@@ -26,9 +26,6 @@
             android:name=".service.view.SolutionService"
             android:exported="true" />
         <service
-            android:name=".service.view.LogService"
-            android:exported="true" />
-        <service
             android:name=".service.view.AuthService"
             android:enabled="true"
             android:exported="true" />

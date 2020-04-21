@@ -8,11 +8,11 @@ import ctfz.trustarea.client.database.data.TaskDBEntity
 @Dao
 interface TaskDao {
 
-    @Query("SELECT * FROM TaskDBEntity WHERE owner_id LIKE :user_id AND task_id LIKE :task_id")
-    fun task(user_id: String, task_id: Int): TaskDBEntity?
+    @Query("SELECT * FROM TaskDBEntity WHERE username LIKE :username AND task_id LIKE :task_id")
+    fun task(username: String, task_id: Int): TaskDBEntity?
 
-    @Query("SELECT * FROM TaskDBEntity WHERE owner_id LIKE :user_id")
-    fun tasks(user_id: String): List<TaskDBEntity>
+    @Query("SELECT * FROM TaskDBEntity WHERE username LIKE :username")
+    fun tasks(username: String): List<TaskDBEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTask(task: TaskDBEntity)

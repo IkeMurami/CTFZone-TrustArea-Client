@@ -3,11 +3,9 @@ package ctfz.trustarea.client.network.data
 import ctfz.trustarea.client.database.data.TaskDBEntity
 
 
-
-
 fun TaskNetworkEntity.asDatabaseEntity(user: UserNetworkEntity): TaskDBEntity {
     return TaskDBEntity(
-        owner_id = user.user_id!!,
+        username = user.username!!,
         task_id = this.task_id!!,
         description = this.description,
         challenge = this.challenge,

@@ -8,7 +8,7 @@ import ctfz.trustarea.client.network.data.TaskNetworkEntity
 @Entity
 data class TaskDBEntity constructor(
 
-    val owner_id: String,
+    val username: String,
     @PrimaryKey val task_id: Int,
     val description: String,
     val challenge: String,
