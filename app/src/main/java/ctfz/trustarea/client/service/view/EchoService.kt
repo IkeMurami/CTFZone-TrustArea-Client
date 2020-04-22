@@ -2,6 +2,7 @@ package ctfz.trustarea.client.service.view
 
 import android.app.IntentService
 import android.app.Service
+import android.content.ComponentName
 import android.content.Intent
 import android.content.Context
 import android.util.Log
