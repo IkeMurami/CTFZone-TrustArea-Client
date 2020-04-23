@@ -21,9 +21,9 @@ class ControllerApi {
 
     private val client = OkHttpClient()
         .newBuilder()
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
-        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(3, TimeUnit.SECONDS)
+        .writeTimeout(3, TimeUnit.SECONDS)
+        .connectTimeout(3, TimeUnit.SECONDS)
         //.addInterceptor(loggingInterceptor)
 
     fun retrofit(): Retrofit {
@@ -37,6 +37,7 @@ class ControllerApi {
 
         return retrofit
     }
+
 
     fun getUserApi(): UserApi = retrofit().create(UserApi::class.java)
 
