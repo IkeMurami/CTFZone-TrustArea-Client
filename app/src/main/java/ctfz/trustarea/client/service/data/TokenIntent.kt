@@ -10,8 +10,8 @@ private const val EXTRA_TOKEN_TYPE = "TOKEN_TYPE"
 
 fun Intent.asTokenNetworkEntity(): TokenNetworkEntity {
     return TokenNetworkEntity(
-        token_type = TokenType.valueOf(this.getStringExtra(EXTRA_TOKEN_TYPE)!!),
-        token = this.getStringExtra(EXTRA_TOKEN)!!
+        token_type = TokenType.valueOf(this.getStringExtra(EXTRA_TOKEN_TYPE) ?: "session"),
+        token = this.getStringExtra(EXTRA_TOKEN) ?: "null"
     )
 }
 

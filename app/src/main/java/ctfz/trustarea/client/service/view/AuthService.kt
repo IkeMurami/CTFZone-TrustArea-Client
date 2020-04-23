@@ -18,7 +18,7 @@ import ctfz.trustarea.client.service.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
+import kotlin.Exception
 
 
 // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
@@ -83,11 +83,11 @@ class AuthService : IntentService("AuthService") {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val refreshToken = sessionRepository.regUser(user)
-                val sessionToken = sessionRepository.getSession(refreshToken!!)
+                val sessionToken = sessionRepository.getSession(refreshToken)
 
                 logger.info(TAG, "Cache reg data")
 
-                userRepository.updateProfile(sessionToken!!)  // user and session token already cached
+                userRepository.updateProfile(sessionToken)  // user and session token already cached
                 sessionRepository.cacheToken(refreshToken, user)
                 // sessionRepository.cacheToken(sessionToken, user)
 
@@ -115,7 +115,7 @@ class AuthService : IntentService("AuthService") {
                 val sessionToken = sessionRepository.getSession(token)
 
                 // for update cache info
-                val user = userRepository.userInfo(sessionToken!!)
+                val user = userRepository.userInfo(sessionToken)
 
                 sendSuccess(logger, TAG, applicationContext, sessionToken?.asIntent(Intent()), request)
             }
@@ -123,7 +123,7 @@ class AuthService : IntentService("AuthService") {
                 sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
+                sendException(logger, TAG, applicationContext, e.localizedMessage ?: "null", request)
             }
 
         }

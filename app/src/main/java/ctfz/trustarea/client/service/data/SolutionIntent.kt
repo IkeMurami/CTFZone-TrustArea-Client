@@ -10,7 +10,7 @@ private const val EXTRA_SOLUTION    = "SOLUTION"
 fun Intent.asSolutionNetworkEntity(): SolutionNetworkEntity {
     return SolutionNetworkEntity(
         task_id = this.getIntExtra(EXTRA_TASK_ID, 0),
-        solution = this.getStringExtra(EXTRA_SOLUTION)!!
+        solution = this.getStringExtra(EXTRA_SOLUTION) ?: ""
     )
 }
 

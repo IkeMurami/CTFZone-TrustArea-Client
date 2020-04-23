@@ -10,9 +10,9 @@ data class TaskDBEntity constructor(
 
     val username: String,
     @PrimaryKey val task_id: Int,
-    val description: String,
-    val challenge: String,
-    val reward: String
+    val description: String?,
+    val challenge: String?,
+    val reward: String?
 
 )
 

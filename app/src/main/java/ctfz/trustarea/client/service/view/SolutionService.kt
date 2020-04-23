@@ -4,6 +4,7 @@ import android.app.IntentService
 import android.app.Service
 import android.content.Intent
 import ctfz.trustarea.client.PACKAGE_ID
+import ctfz.trustarea.client.core.NetworkException
 import ctfz.trustarea.client.core.Responder.Companion.sendError
 import ctfz.trustarea.client.core.Responder.Companion.sendException
 import ctfz.trustarea.client.core.Responder.Companion.sendSuccess
@@ -17,7 +18,7 @@ import ctfz.trustarea.client.service.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
+import kotlin.Exception
 
 
 private const val ACTION_SOLUTION_SEND = "${PACKAGE_ID}.action.SOLUTION_SEND"
@@ -60,6 +61,8 @@ class SolutionService : IntentService("SolutionService") {
         CoroutineScope(Dispatchers.IO).launch {
 
             try {
+                token.token ?: throw Exception("Token is null")
+
                 ControllerApi().getSolutionApi().solve(token.token, solution).execute().let {
                     if (it.isSuccessful) {
                         val task = it.body()?.data
@@ -68,6 +71,8 @@ class SolutionService : IntentService("SolutionService") {
                         sendSuccess(logger, TAG, applicationContext, task?.asIntent(Intent())!!, request)
                     }
                     else {
+                        if (it.code() >= 500)
+                            throw NetworkException("Network Exception", it.errorBody()!!)
                         throw ResponseErrorException("Wrong solution", it.errorBody()!!)
                     }
                 }

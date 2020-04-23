@@ -10,13 +10,11 @@ enum class TokenType(token_type: String) {
 }
 
 
-
-
 fun TokenNetworkEntity.asDatabaseEntity(user: UserNetworkEntity): TokenDBEntity {
 
     return TokenDBEntity(
         username = user.username!!,
-        token = this.token,
+        token = this.token ?: "empty",
         token_type = this.token_type.name,
         expired = this.expired
     )

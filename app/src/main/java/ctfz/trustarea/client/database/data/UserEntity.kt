@@ -11,8 +11,8 @@ import ctfz.trustarea.client.network.data.UserNetworkEntity
 data class UserDBEntity constructor(
     @PrimaryKey
     val user_name: String,
-    val first_name: String,
-    val last_name: String
+    val first_name: String?,
+    val last_name: String?
 ){
     companion object {
         const val TABLE_NAME = "users"

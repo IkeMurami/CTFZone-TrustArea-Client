@@ -17,7 +17,7 @@ import ctfz.trustarea.client.service.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
+import kotlin.Exception
 
 private const val ACTION_GET_USER = "${PACKAGE_ID}.action.GET_USER"
 private const val ACTION_GET_USERS = "${PACKAGE_ID}.action.GET_USERS"
@@ -74,7 +74,7 @@ class UserService : IntentService("UserService") {
             try {
                 val user = userRepository.userInfo(username!!)
 
-                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent())!!, request)
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
                 sendError(logger, TAG, applicationContext, e.error, request)
@@ -106,7 +106,7 @@ class UserService : IntentService("UserService") {
             try {
                 val user = userRepository.updateProfile(token)
 
-                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent())!!, request)
+                sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
                 sendError(logger, TAG, applicationContext, e.error, request)

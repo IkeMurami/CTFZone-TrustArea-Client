@@ -90,13 +90,13 @@ class TaskService : IntentService("TaskService") {
             try {
                 val createdTask = taskRepository.createTask(sessionToken, task)
 
-                sendSuccess(logger, TAG, applicationContext, createdTask?.asIntent(Intent())!!, request)
+                sendSuccess(logger, TAG, applicationContext, createdTask?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
                 sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
+                sendException(logger, TAG, applicationContext, e.localizedMessage ?: "null", request)
             }
 
         }
@@ -108,13 +108,13 @@ class TaskService : IntentService("TaskService") {
             try {
                 val updatedTask = taskRepository.updateTask(sessionToken, task)
 
-                sendSuccess(logger, TAG, applicationContext, updatedTask?.asIntent(Intent())!!, request)
+                sendSuccess(logger, TAG, applicationContext, updatedTask?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
                 sendError(logger, TAG, applicationContext, e.error, request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
+                sendException(logger, TAG, applicationContext, e.localizedMessage ?: "null", request)
             }
         }
     }
@@ -140,7 +140,7 @@ class TaskService : IntentService("TaskService") {
             try {
                 val fetchedTask = taskRepository.getTask(token, task)
 
-                sendSuccess(logger, TAG, applicationContext, fetchedTask?.asIntent(Intent())!!, request)
+                sendSuccess(logger, TAG, applicationContext, fetchedTask?.asIntent(Intent()), request)
             }
             catch (e: ResponseErrorException) {
                 sendError(logger, TAG, applicationContext, e.error, request)

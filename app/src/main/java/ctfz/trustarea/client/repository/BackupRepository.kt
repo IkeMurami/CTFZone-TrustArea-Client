@@ -9,6 +9,7 @@ import ctfz.trustarea.client.network.data.UserNetworkEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.Exception
 import java.util.logging.Logger
 
 
@@ -17,13 +18,16 @@ class BackupRepository(private val context: Context, private val logger: LogRepo
     private val TAG = "BackupRepository"
     private val backupPath: File = context.filesDir
 
-    suspend fun save(token: TokenNetworkEntity): Boolean {
+    suspend fun save(token: TokenNetworkEntity?): Boolean {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
+
         val users = getUserRepository(context)
-        val user = users.userInfo(token)?: return false
+        val user = users.userInfo(token) ?: throw Exception("User with token ${token.token} not found")
 
         logger.info(TAG, "Save backup for user with token ${token.token}")
 
-        val backup = File(backupPath, user.username ?: return false)
+        val backup = File(backupPath, user.username ?: throw Exception("Username is null"))
 
         return if (backup.exists()) { true } else {
             val tasks = getTaskRepository(context).getAllTasks(token, user)
@@ -34,11 +38,14 @@ class BackupRepository(private val context: Context, private val logger: LogRepo
 
     }
 
-    suspend fun send(token: TokenNetworkEntity): ByteArray? {
-        val users = getUserRepository(context)
-        val user = users.userInfo(token)?: return null
+    suspend fun send(token: TokenNetworkEntity?): ByteArray? {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
 
-        val backup = File(backupPath, user.username ?: return null)
+        val users = getUserRepository(context)
+        val user = users.userInfo(token)?: throw Exception("User with token ${token.token} not found")
+
+        val backup = File(backupPath, user.username ?: throw Exception("User with token ${token.token} not found (username is null)"))
         val data = backup.readBytes()
 
         return data

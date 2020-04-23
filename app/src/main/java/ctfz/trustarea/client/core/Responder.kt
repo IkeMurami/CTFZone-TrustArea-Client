@@ -14,13 +14,12 @@ class Responder {
 
         const val EXTRA_CALLBACK = IMS.RETURN_WITH_ACTION_NAME
 
-        fun sendSuccess(logger: LogRepository, TAG: String, context: Context, response: Intent, request: Intent) {
+        fun sendSuccess(logger: LogRepository, TAG: String, context: Context, response: Intent?, request: Intent) {
 
             val ims = IMS(context)
 
             logger.info(TAG, "Success: Send response to ${ims.extractReturnAction(request)}")
-            ims.replyTo(request, response)
-            // context.sendBroadcast(intent?.apply { action = callback })
+            ims.replyTo(request, response ?: Intent())
 
         }
 
@@ -31,14 +30,13 @@ class Responder {
             logger.info(TAG, "Error: Send response to ${ims.extractReturnAction(request)}")
 
             ims.replyTo(errorIntent(error?.message!!, error.errors), request)
-            // context.sendBroadcast(errorIntent(error?.message!!, error.errors).apply { action = callback })
 
         }
 
-        fun sendException(logger: LogRepository, TAG: String, context: Context, message: String, request: Intent) {
+        fun sendException(logger: LogRepository, TAG: String, context: Context, message: String?, request: Intent) {
             val ims = IMS(context)
             logger.info(TAG, "Exception: Send response to ${ims.extractReturnAction(request)} with message ${message}")
-            ims.replyTo(errorIntent("Request failure", listOf(message)), request)
+            ims.replyTo(errorIntent("Request failure", listOf(message ?: "msg exception is null :( ")), request)
         }
     }
 }

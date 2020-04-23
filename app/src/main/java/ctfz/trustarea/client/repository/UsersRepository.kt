@@ -2,6 +2,7 @@ package ctfz.trustarea.client.repository
 
 import android.content.Context
 import ctfz.trustarea.client.core.InvalidTokenException
+import ctfz.trustarea.client.core.NetworkException
 import ctfz.trustarea.client.core.ResponseErrorException
 import ctfz.trustarea.client.database.CTFZoneDatabase
 import ctfz.trustarea.client.database.data.asDomainModel
@@ -33,6 +34,9 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
             return user
         }
         else {
+
+            if (userResp.code() >= 500)
+                throw NetworkException("Network Exception", userResp.errorBody()!!)
             throw ResponseErrorException("User already exist", userResp.errorBody()!!)
         }
     }
@@ -40,7 +44,10 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
     /*
      * [Session Token] -> [User<Me>]
      */
-    suspend fun updateProfile(token: TokenNetworkEntity): UserNetworkEntity? {
+    suspend fun updateProfile(token: TokenNetworkEntity?): UserNetworkEntity? {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
+
         logger.info(TAG, "Update info for user with token ${token.token}")
         val meResp = ControllerApi().getUserApi().profile(token.token).execute()
 
@@ -55,6 +62,9 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
             return user
         }
         else {
+
+            if (meResp.code() >= 500)
+                throw NetworkException("Network Exception", meResp.errorBody()!!)
             throw ResponseErrorException("Invalid token", meResp.errorBody()!!)
         }
 
@@ -82,7 +92,10 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
     /*
      * [Token] -> [User]
      */
-    suspend fun userInfo(token: TokenNetworkEntity): UserNetworkEntity? {
+    suspend fun userInfo(token: TokenNetworkEntity?): UserNetworkEntity? {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
+
         logger.info(TAG, "Get user info by token: ${token}")
         val username = database.tokenDao.userByToken(token.token)?.username
         val user = userInfo(username) ?: run {
@@ -106,6 +119,9 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
             return users ?: return emptyList()
         }
         else {
+
+            if (usersResp.code() >= 500)
+                throw NetworkException("Network Exception", usersResp.errorBody()!!)
             throw ResponseErrorException("Invalid token", usersResp.errorBody()!!)
         }
     }

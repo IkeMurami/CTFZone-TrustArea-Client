@@ -1,6 +1,7 @@
 package ctfz.trustarea.client.repository
 
 import android.content.Context
+import ctfz.trustarea.client.core.NetworkException
 import ctfz.trustarea.client.core.ResponseErrorException
 import ctfz.trustarea.client.database.CTFZoneDatabase
 import ctfz.trustarea.client.database.data.asDomainModel
@@ -13,7 +14,9 @@ private const val TAG = "TaskRepository"
 
 class TaskRepository(private val database: CTFZoneDatabase, private val usersRepository: UsersRepository, private val logger: LogRepository) {
 
-    suspend fun createTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
+    suspend fun createTask(token: TokenNetworkEntity, task: TaskNetworkEntity?): TaskNetworkEntity? {
+        token.token ?: throw Exception("Token is null")
+        task ?: throw Exception("Task is null")
         // post data
         val api = ControllerApi().getTaskApi()
         api.create(token.token, task).execute().let {
@@ -31,12 +34,17 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
                 return createdTask
             }
             else {
+                if (it.code() >= 500)
+                    throw NetworkException("Network Exception", it.errorBody()!!)
                 throw ResponseErrorException("Something wrong", it.errorBody()!!)
             }
         }
     }
 
-    suspend fun updateTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
+    suspend fun updateTask(token: TokenNetworkEntity, task: TaskNetworkEntity?): TaskNetworkEntity? {
+        token.token ?: throw Exception("Token is null")
+        task ?: throw Exception("Task is null")
+
         val api = ControllerApi().getTaskApi()
 
         api.update(token.token, task.task_id!!, task).execute().let {
@@ -49,14 +57,21 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
                 return task
             }
             else {
+                if (it.code() >= 500)
+                    throw NetworkException("Network Exception", it.errorBody()!!)
                 throw ResponseErrorException("Something wrong", it.errorBody()!!)
             }
         }
     }
 
-    suspend fun getTask(token: TokenNetworkEntity, task: TaskNetworkEntity): TaskNetworkEntity? {
+    suspend fun getTask(token: TokenNetworkEntity?, task: TaskNetworkEntity?): TaskNetworkEntity? {
+        token ?: throw Exception("Token is null")
+        task ?: throw Exception("Task is null")
+        token.token ?: throw Exception("Token is null")
+        task.task_id ?: throw Exception("Task_ID is null")
+
         val user = usersRepository.userInfo(token)
-        val fetchTask = database.taskDao.task(user?.username!!, task.task_id!!)
+        val fetchTask = database.taskDao.task(user?.username ?: throw Exception("User not found by token ${token.token}"), task.task_id)
 
         if (fetchTask == null) {
             val api = ControllerApi().getTaskApi()
@@ -66,10 +81,13 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
 
                     logger.info(TAG, "Find task ${taskFromBackend} for user with token ${token}")
 
-                    cacheTask(taskFromBackend!!, token)
+                    cacheTask(taskFromBackend, token)
                     return taskFromBackend
                 }
                 else {
+
+                    if (it.code() >= 500)
+                        throw NetworkException("Network Exception", it.errorBody()!!)
                     throw ResponseErrorException("Something wrong", it.errorBody()!!)
                 }
             }
@@ -80,7 +98,9 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
         }
     }
 
-    suspend fun getAllTasks(token: TokenNetworkEntity, user: UserNetworkEntity? = null): List<TaskNetworkEntity> {
+    suspend fun getAllTasks(token: TokenNetworkEntity?, user: UserNetworkEntity? = null): List<TaskNetworkEntity> {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
 
         ControllerApi().getTaskApi().tasks(token.token, user?.username).execute().let{
             if (it.isSuccessful) {
@@ -90,12 +110,20 @@ class TaskRepository(private val database: CTFZoneDatabase, private val usersRep
                 return tasks!!
             }
             else {
+
+                if (it.code() >= 500)
+                    throw NetworkException("Network Exception", it.errorBody()!!)
                 throw  ResponseErrorException("Something wrong", it.errorBody()!!)
             }
         }
     }
 
-    suspend fun cacheTask(task: TaskNetworkEntity, token: TokenNetworkEntity) {
+    suspend fun cacheTask(task: TaskNetworkEntity?, token: TokenNetworkEntity?) {
+        token ?: throw Exception("Token is null")
+        task ?: throw Exception("Task is null")
+        token.token ?: throw Exception("Token is null")
+        task.task_id ?: throw Exception("Task_ID is null")
+
         val user = usersRepository.userInfo(token)
 
         if (user != null) {

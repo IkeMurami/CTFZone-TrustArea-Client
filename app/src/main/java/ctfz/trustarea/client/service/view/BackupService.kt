@@ -18,7 +18,7 @@ import ctfz.trustarea.client.service.data.backupIntent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
+import kotlin.Exception
 
 private const val ACTION_BACKUP = "${PACKAGE_ID}.action.CREATE_BACKUP"
 private const val ACTION_GET = "${PACKAGE_ID}.action.GET_BACKUP"
@@ -62,7 +62,7 @@ class BackupService : IntentService("BackupService") {
                 sendSuccess(logger, TAG, applicationContext, backupIntent(ok, null), request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
+                sendException(logger, TAG, applicationContext, e.localizedMessage ?: "null", request)
             }
         }
     }
@@ -75,7 +75,7 @@ class BackupService : IntentService("BackupService") {
                 sendSuccess(logger, TAG, applicationContext, backupIntent(true, data), request)
             }
             catch (e: Exception) {
-                sendException(logger, TAG, applicationContext, e.localizedMessage!!, request)
+                sendException(logger, TAG, applicationContext, e.localizedMessage ?: "null", request)
             }
         }
     }

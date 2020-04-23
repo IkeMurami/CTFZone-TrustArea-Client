@@ -15,9 +15,9 @@ fun Intent.asTaskNetworkEntity(): TaskNetworkEntity {
 
     return TaskNetworkEntity(
         task_id     = this.getIntExtra(EXTRA_ID, 0),
-        description = this.getStringExtra(EXTRA_DESCRIPTION)!!,
-        challenge   = this.getStringExtra(EXTRA_CHALLENGE)!!,
-        reward      = this.getStringExtra(EXTRA_REWARD)!!
+        description = this.getStringExtra(EXTRA_DESCRIPTION) ?: "empty",
+        challenge   = this.getStringExtra(EXTRA_CHALLENGE) ?: "empty",
+        reward      = this.getStringExtra(EXTRA_REWARD) ?: "empty"
     )
 
 }

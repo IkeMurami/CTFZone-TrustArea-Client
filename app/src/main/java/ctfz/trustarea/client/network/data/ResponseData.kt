@@ -28,8 +28,8 @@ data class Response<Data> (
  */
 data class TokenNetworkEntity (
 
-    @SerializedName("token_type") val token_type: TokenType = TokenType.access,
-    @SerializedName("token") val token: String,
+    @SerializedName("token_type") val token_type: TokenType = TokenType.session,
+    @SerializedName("token") val token: String?,
     @SerializedName("expired") val expired: Long? = 0
 
 ) : ResponseData()
@@ -60,9 +60,9 @@ data class UserNetworkEntityResponse (
 data class TaskNetworkEntity (
 
     @SerializedName("task_id") val task_id: Int?,
-    @SerializedName("description") val description: String,
-    @SerializedName("challenge") val challenge: String,
-    @SerializedName("reward") val reward: String
+    @SerializedName("description") val description: String?,
+    @SerializedName("challenge") val challenge: String?,
+    @SerializedName("reward") val reward: String?
 
 ) : ResponseData()
 
@@ -70,12 +70,12 @@ data class TaskNetworkEntity (
 data class TaskNetworkEntityResponse (
 
     @SerializedName("ID") val ID: Int?,
-    @SerializedName("Description") val Description: String,
-    @SerializedName("Challenge") val Challenge: String,
-    @SerializedName("Reward") val Reward: String,
-    @SerializedName("Owner") val Owner: String,
-    @SerializedName("Solved") val Solved: Boolean,
-    @SerializedName("Date") val Date: String
+    @SerializedName("Description") val Description: String?,
+    @SerializedName("Challenge") val Challenge: String?,
+    @SerializedName("Reward") val Reward: String?,
+    @SerializedName("Owner") val Owner: String?,
+    @SerializedName("Solved") val Solved: Boolean = false,
+    @SerializedName("Date") val Date: String?
 
 ) : ResponseData()
 
