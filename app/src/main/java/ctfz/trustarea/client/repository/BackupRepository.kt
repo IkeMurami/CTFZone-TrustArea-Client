@@ -38,25 +38,6 @@ class BackupRepository(private val context: Context, private val logger: LogRepo
 
     }
 
-    suspend fun small_save(token: TokenNetworkEntity?): Boolean {
-        token ?: throw Exception("Token is null")
-        token.token ?: throw Exception("Token is null")
-
-        val users = getUserRepository(context)
-        val user = users.userInfo(token) ?: throw Exception("User with token ${token.token} not found")
-
-        logger.info(TAG, "Save backup for user with token ${token.token}")
-
-        val backup = File(backupPath, user.username ?: throw Exception("Username is null"))
-
-        return if (backup.exists()) { true } else {
-            val tasks = getTaskRepository(context).getAllTasks(token, user)
-
-            small_writer(backup, tasks)
-        }
-
-    }
-
     suspend fun send(token: TokenNetworkEntity?): ByteArray? {
         token ?: throw Exception("Token is null")
         token.token ?: throw Exception("Token is null")
@@ -68,25 +49,6 @@ class BackupRepository(private val context: Context, private val logger: LogRepo
         val data = backup.readBytes()
 
         return data
-    }
-
-
-
-    suspend fun small_writer(file: File, tasks: List<TaskNetworkEntity>): Boolean {
-
-        return withContext(Dispatchers.IO) {
-            file.bufferedWriter().apply {
-
-                write("Tasks"); newLine()
-                tasks.forEach {
-                    write(it.toString()); newLine()
-                }
-                close()
-            }
-
-            return@withContext true
-        }
-
     }
 
     suspend fun writer(file: File, user: UserNetworkEntity, sessions: List<TokenNetworkEntity>, tasks: List<TaskNetworkEntity>): Boolean {

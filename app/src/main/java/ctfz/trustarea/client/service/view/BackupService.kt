@@ -57,7 +57,7 @@ class BackupService : IntentService("BackupService") {
     private fun handleActionCreateBackup(token: TokenNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val ok = BackupRepository(applicationContext, getLogger(applicationContext)).small_save(token)
+                val ok = BackupRepository(applicationContext, getLogger(applicationContext)).save(token)
 
                 sendSuccess(logger, TAG, applicationContext, backupIntent(ok, null), request)
             }
