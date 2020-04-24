@@ -19,3 +19,8 @@ Rebuild (provided that you are connecting to an already deployed container) - le
 
 config.json contains information about the address of your backend and the identifier of your application.
 It is strongly recommended that these values not be changed.
+
+
+# IntentMessagingSystem (IMS)
+
+This helper class is written specifically for communicating with other applications.
