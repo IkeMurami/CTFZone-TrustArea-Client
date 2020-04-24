@@ -29,14 +29,14 @@ class Responder {
             logger.info(TAG, "Error: Return message: ${error?.message}; errors: ${error?.errors}")
             logger.info(TAG, "Error: Send response to ${ims.extractReturnAction(request)}")
 
-            ims.replyTo(errorIntent(error?.message!!, error.errors), request)
+            ims.replyTo(request, errorIntent(error?.message!!, error.errors))
 
         }
 
         fun sendException(logger: LogRepository, TAG: String, context: Context, message: String?, request: Intent) {
             val ims = IMS(context)
             logger.info(TAG, "Exception: Send response to ${ims.extractReturnAction(request)} with message ${message}")
-            ims.replyTo(errorIntent("Request failure", listOf(message ?: "msg exception is null :( ")), request)
+            ims.replyTo(request, errorIntent("Request failure", listOf(message ?: "msg exception is null :( ")))
         }
     }
 }
