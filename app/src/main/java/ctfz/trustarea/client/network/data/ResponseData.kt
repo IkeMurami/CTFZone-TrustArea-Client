@@ -1,9 +1,11 @@
 package ctfz.trustarea.client.network.data
 
 import android.content.Intent
+import android.os.Parcelable
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import kotlinx.android.parcel.Parcelize
 import okhttp3.ResponseBody
 import java.io.Serializable
 
@@ -13,7 +15,8 @@ enum class RespondStatus(status: String) {
     failure("failure")
 }
 
-sealed class ResponseData : Serializable
+
+sealed class ResponseData : Parcelable
 
 data class Response<Data> (
 
@@ -26,6 +29,7 @@ data class Response<Data> (
 /*
  * Response Data
  */
+@Parcelize
 data class TokenNetworkEntity (
 
     @SerializedName("token_type") val token_type: TokenType = TokenType.session,
@@ -34,10 +38,10 @@ data class TokenNetworkEntity (
 
 ) : ResponseData()
 
-
+@Parcelize
 data class RefreshTokenNetworkEntity (@SerializedName("refresh_token") val refresh_token: String) : ResponseData()
 
-
+@Parcelize
 data class UserNetworkEntity (
 
     @SerializedName("username") val username: String? = null,
@@ -46,7 +50,7 @@ data class UserNetworkEntity (
 
 ) : ResponseData()
 
-
+@Parcelize
 data class UserNetworkEntityResponse (
 
     @SerializedName("Username") val Username: String? = null,
@@ -56,7 +60,7 @@ data class UserNetworkEntityResponse (
 
 ) : ResponseData()
 
-
+@Parcelize
 data class TaskNetworkEntity (
 
     @SerializedName("task_id") val task_id: Int?,
@@ -66,7 +70,7 @@ data class TaskNetworkEntity (
 
 ) : ResponseData()
 
-
+@Parcelize
 data class TaskNetworkEntityResponse (
 
     @SerializedName("ID") val ID: Int?,
@@ -79,7 +83,7 @@ data class TaskNetworkEntityResponse (
 
 ) : ResponseData()
 
-
+@Parcelize
 data class SolutionNetworkEntity(
 
     @SerializedName("task_id") val task_id: Int,
@@ -87,7 +91,7 @@ data class SolutionNetworkEntity(
 
 ) : ResponseData()
 
-
+@Parcelize
 object ErrorNetworkEntity: ResponseData()
 
 fun ResponseBody.asErrorNetworkEntity(): Response<ErrorNetworkEntity>? {

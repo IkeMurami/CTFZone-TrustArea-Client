@@ -49,16 +49,18 @@ class UserService : IntentService("UserService") {
 
         when (intent?.action) {
             ACTION_GET_USER -> {
+                val token = intent.asTokenNetworkEntity()
                 val user = intent.asUserNetworkEntity()
 
                 logger.info(TAG, "Get user info by username ${user.username}")
 
-                handleActionUser(user.username, intent)
+                handleActionUser(token, user.username, intent)
             }
             ACTION_GET_USERS -> {
+                val token = intent.asTokenNetworkEntity()
                 logger.info(TAG, "Get all users info")
 
-                handleActionListUser(intent)
+                handleActionListUser(token, intent)
             }
             ACTION_GET_PROFILE -> {
                 val token = intent.asTokenNetworkEntity()
@@ -69,10 +71,10 @@ class UserService : IntentService("UserService") {
         }
     }
 
-    private fun handleActionUser(username: String?, request: Intent) {
+    private fun handleActionUser(token: TokenNetworkEntity, username: String?, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val user = userRepository.userInfo(username!!)
+                val user = userRepository.userInfo(token, username)
 
                 sendSuccess(logger, TAG, applicationContext, user?.asIntent(Intent()), request)
             }
@@ -85,10 +87,10 @@ class UserService : IntentService("UserService") {
         }
     }
 
-    private fun handleActionListUser(request: Intent) {
+    private fun handleActionListUser(token: TokenNetworkEntity, request: Intent) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val users = userRepository.usersList()
+                val users = userRepository.usersList(token)
 
                 sendSuccess(logger, TAG, applicationContext, users?.asIntent(Intent()), request)
             }

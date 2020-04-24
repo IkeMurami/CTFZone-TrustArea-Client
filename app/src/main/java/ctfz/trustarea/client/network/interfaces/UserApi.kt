@@ -13,10 +13,10 @@ import retrofit2.http.Query
 interface UserApi {
 
     @GET("users")
-    fun user(@Query("username") username: String?): Call<Response<UserNetworkEntityResponse>> // If user not exist - create
+    fun user(@Header("Authorization") session_token: String, @Query("username") username: String?): Call<Response<UserNetworkEntityResponse>> // If user not exist - create
 
     @GET("users")
-    fun users(): Call<Response<List<UserNetworkEntityResponse>>>
+    fun users(@Header("Authorization") session_token: String): Call<Response<List<UserNetworkEntityResponse>>>
 
     @GET("users/me")
     fun profile(@Header("Authorization") session_token: String): Call<Response<UserNetworkEntityResponse>>  // Get user by token

@@ -21,11 +21,12 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
     /*
      * [Username] -> [User] + update
      */
-    suspend fun updateUserInfo(username: String): UserNetworkEntity? {
-
+    suspend fun updateUserInfo(token: TokenNetworkEntity?, username: String): UserNetworkEntity? {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
         logger.info(TAG, "Update info for user ${username}")
 
-        val userResp = ControllerApi().getUserApi().user(username).execute()
+        val userResp = ControllerApi().getUserApi().user(token.token, username).execute()
         if (userResp.isSuccessful) {
             val user = userResp.body()?.data?.asUserNetworkEntity()
             database.userDao.insertUser(user?.asDatabaseEntity()!!)
@@ -72,7 +73,10 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
     /*
      * [Username] -> [User]
      */
-    suspend fun userInfo(username: String?): UserNetworkEntity? {
+    suspend fun userInfo(token: TokenNetworkEntity?, username: String?): UserNetworkEntity? {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
+
         logger.info(TAG, "Get user info by username ${username}")
 
         username ?: return null
@@ -81,7 +85,7 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
 
         if (user == null) {
             logger.info(TAG, "User not found in local database")
-            return updateUserInfo(username)
+            return updateUserInfo(token, username)
         }
         else {
             logger.info(TAG, "User found: ${user}")
@@ -98,7 +102,7 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
 
         logger.info(TAG, "Get user info by token: ${token}")
         val username = database.tokenDao.userByToken(token.token)?.username
-        val user = userInfo(username) ?: run {
+        val user = userInfo(token, username) ?: run {
             return updateProfile(token)?: run {
                 logger.info(TAG, "User not found by token ${token}")
                 throw InvalidTokenException("Invalid token")
@@ -108,9 +112,12 @@ class UsersRepository(private val database: CTFZoneDatabase, private val session
         return user
     }
 
-    suspend fun usersList(): List<UserNetworkEntity> {
+    suspend fun usersList(token: TokenNetworkEntity?): List<UserNetworkEntity> {
+        token ?: throw Exception("Token is null")
+        token.token ?: throw Exception("Token is null")
+
         logger.info(TAG, "Get list users")
-        val usersResp = ControllerApi().getUserApi().users().execute()
+        val usersResp = ControllerApi().getUserApi().users(token.token).execute()
         if (usersResp.isSuccessful) {
             val users = usersResp.body()?.data?.asUserNetworkEntity()
 
