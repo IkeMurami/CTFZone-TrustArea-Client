@@ -81,7 +81,7 @@ class LogRepository(private val database: CTFZoneDatabase) {
 
     fun info(tag: String, message: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            insert(tag, message)
+            // insert(tag, message)
         }
     }
 
